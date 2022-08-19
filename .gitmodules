@@ -1,0 +1,6 @@
+[submodule "lib/ESPAsyncE131"]
+	path = lib/ESPAsyncE131
+	url = https://github.com/netmindz/ESPAsyncE131.git
+[submodule "lib/SKAARHOJ-Open-Engineering"]
+	path = lib/SKAARHOJ-Open-Engineering
+	url = https://github.com/kasperskaarhoj/SKAARHOJ-Open-Engineering.git
