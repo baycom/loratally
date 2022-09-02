@@ -1,8 +1,10 @@
-#include "main.h"
 #include <CRC32.h>
+
+#include "main.h"
 
 static unsigned long statusLast = 0;
 static unsigned long commandLast = 0;
+
 int RSSIlast = 0;
 static uint16_t msg_cnt = 0;
 
@@ -18,9 +20,9 @@ void lora_setup() {
         display.drawString(64, 12, "SX127X");
         display.drawString(64, 42, "FAIL");
         d();
-//        while (true) {
-//            yield();
-//        }
+        //        while (true) {
+        //            yield();
+        //        }
     }
 
     LoRa.setFrequency(cfg.tx_frequency);
@@ -29,15 +31,14 @@ void lora_setup() {
     LoRa.setSyncWord(cfg.syncword);
     LoRa.enableCrc();
 
-    setTallyLight(0, 0, 32, false);
+    setTallyLight(0, 0, 32, DISP_OFF);
 
 #ifdef DEBUG
     LoRa.dumpRegisters(Serial);
 #endif
 }
 
- int LoRaSend(uint8_t addr, uint8_t r, uint8_t g, uint8_t b,
-                    bool disp) {
+int LoRaSend(uint8_t addr, uint8_t r, uint8_t g, uint8_t b, bool disp) {
     tallyCMD_t t;
     memset(&t, 0, sizeof(tallyCMD_t));
     t.t.version = CMD_VERSION;
@@ -72,7 +73,45 @@ void lora_setup() {
     return 1;
 }
 
-int LoRaBC(uint8_t *property_values, int numChannels, bool disp) {
+static uint8_t LoRaEncodeTallyState(int index) {
+    uint8_t stateRH, brightnessRH, stateLH, brightnessLH;
+    if (getTallyState(index | TALLY_RH, stateRH, brightnessRH) &&
+        getTallyState(index | TALLY_LH, stateLH, brightnessLH)) {
+        return (stateRH & 3) | (brightnessRH & 3) << 2 | (stateLH & 3) << 4 |
+               (brightnessLH & 3) << 6;
+    }
+    return 0;
+}
+
+static void LoRaDecodeTallyState(int index, uint8_t tallyStateEncoded) {
+    uint8_t stateRH = tallyStateEncoded & 3;
+    uint8_t brightnessRH = (tallyStateEncoded >> 2) & 3;
+    uint8_t stateLH = (tallyStateEncoded >> 4) & 3;
+    uint8_t brightnessLH = (tallyStateEncoded >> 6) & 3;
+
+    setTallyState(index | TALLY_RH, stateRH, brightnessRH);
+    setTallyState(index | TALLY_LH, stateLH, brightnessLH);
+}
+
+int LoRaBCTS(void) {
+    tallyCMD_t t;
+    memset(&t, 0, sizeof(tallyCMD_t));
+    t.bts.version = CMD_VERSION;
+    t.bts.cmd = cmd_BC_TS;
+
+    for (int i = 1; i <= LORA_MAX_TS; i++) {
+        t.bts.tally_state[i-1] = LoRaEncodeTallyState(i);
+    }
+    t.dw.crc32 = CRC32::calculate(t.b8, sizeof(tallyCMD_t) - sizeof(uint32_t));
+
+    LoRa.beginPacket();
+    LoRa.write(t.b8, sizeof(t));
+    LoRa.endPacket();
+
+    return 1;
+}
+
+int LoRaBCRGB(uint8_t *property_values, int numChannels, bool disp) {
     tallyCMD_t t;
     memset(&t, 0, sizeof(tallyCMD_t));
     t.b.version = CMD_VERSION;
@@ -84,8 +123,8 @@ int LoRaBC(uint8_t *property_values, int numChannels, bool disp) {
 
     numChannels /= 3;
 
-    if (numChannels > TALLY_MAX_NUM) {
-        numChannels = TALLY_MAX_NUM;
+    if (numChannels > LORA_MAX_RGB) {
+        numChannels = LORA_MAX_RGB;
     }
     for (int i = 0; i < numChannels; i++) {
         uint8_t r = property_values[i * 3];
@@ -133,12 +172,14 @@ void commandBC(void) {
     uint8_t property_vals[TALLY_MAX_NUM * 3];
     for (uint16_t n = 0; n < TALLY_MAX_NUM; n++) {
         int r, g, b;
-        rgbFromTSL(r, g, b, 3, tallyState[n]);
+        uint8_t state, brightness;
+        getTallyState(n, state, brightness);
+        rgbFromTSL(r, g, b, state, brightness);
         property_vals[n * 3] = r;
         property_vals[(n * 3) + 1] = g;
         property_vals[(n * 3) + 2] = b;
     }
-    LoRaBC(property_vals, TALLY_MAX_NUM, false);
+    LoRaBCRGB(property_vals, TALLY_MAX_NUM);
 }
 
 static void tallyFromEncoded(uint8_t *encodedrgb, uint8_t tally_id) {
@@ -159,7 +200,7 @@ static void tallyFromEncoded(uint8_t *encodedrgb, uint8_t tally_id) {
     printf("gx: %d rx: %d bx %d y: %d\n", gx, rx, bx, y);
     printf("r: %d g: %d b %d \n", r, g, b);
 #endif
-    setTallyLight(r, g, b);
+    setTallyLight(r, g, b, DISP_RSSI);
 }
 
 void lora_loop() {
@@ -188,13 +229,17 @@ void lora_loop() {
                     RSSIlast = rssi;
                     if (t.t.cmd == cmd_TALLY && t.t.addr == cfg.tally_id) {
                         msg_cnt++;
-                        setTallyLight(t.t.r, t.t.g, t.t.b);
+                        setTallyLight(t.t.r, t.t.g, t.t.b, DISP_RSSI);
                     } else if (t.b.cmd == cmd_BROADCAST) {
                         msg_cnt++;
 #ifdef DEBUG
                         printf("Tally Broadcast:\n");
 #endif
                         tallyFromEncoded(t.b.rgb, cfg.tally_id);
+                    } else if (t.t.cmd == cmd_BC_TS) {
+                        for (int i = 0; i < LORA_MAX_TS; i++) {
+                            LoRaDecodeTallyState(i + 1, t.bts.tally_state[i]);
+                        }
                     } else if (t.t.cmd == cmd_STATUS) {
                         DynamicJsonDocument json(256);
 #ifdef DEBUG
@@ -254,6 +299,6 @@ void lora_loop() {
     }
     if (cfg.command_interval &&
         (millis() - commandLast) > cfg.command_interval) {
-        commandBC();
+        LoRaBCTS();
     }
 }

@@ -241,7 +241,7 @@ class ESPTslReceiver : public TslReceiver {
    public:
     ESPTslReceiver(int port) : TslReceiver(port) {}
     virtual void onMessage(Message* m) override {
-        bool tally_changed = false;
+        bool tallyChanged = false;
 #ifdef DEBUG
         time_t timer;
         char buffer[26];
@@ -292,29 +292,12 @@ class ESPTslReceiver : public TslReceiver {
 #endif
                 uint16_t index = m->dmsgs[i]->index;
                 if (index < TALLY_MAX_NUM) {
-                    int r, g, b;
-                    tally_changed = true;
-                    if(m->dmsgs[i]->rh == 1 || m->dmsgs[i]->lh == 1) {
-                        setTallyState(index, 1);
-                    } else if(m->dmsgs[i]->rh == 3 || m->dmsgs[i]->lh == 3) {
-                        setTallyState(index, 3);
-                    } else if(m->dmsgs[i]->rh == 2 || m->dmsgs[i]->lh == 2) {
-                        setTallyState(index, 2);
-                    }
-                    commandBC();
-                    if(index == cfg.tally_id) {
-                        rgbFromTSL(r, g, b, m->dmsgs[i]->brightness,
-                                m->dmsgs[i]->rh);
-                        char* text = NULL;
-                        if (m->dmsgs[i]->text) {
-                            text = m->dmsgs[i]->displayData.text;
-                        }
-                        setTallyLight(r, g, b, true, 0, text);
-                        rgbFromTSL(r, g, b, m->dmsgs[i]->brightness,
-                                m->dmsgs[i]->lh);
-                        setTallyLight(r, g, b, true, 1, text);
-                    }
+                    tallyChanged |= setTallyState(index|TALLY_LH, m->dmsgs[i]->lh, m->dmsgs[i]->brightness, m->dmsgs[i]->displayData.text);
+                    tallyChanged |= setTallyState(index|TALLY_RH, m->dmsgs[i]->rh, m->dmsgs[i]->brightness, m->dmsgs[i]->displayData.text);
                 }
+            }
+            if (tallyChanged) {
+                LoRaBCTS();
             }
 #ifdef DEBUG
             printf("    ]\n");

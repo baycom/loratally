@@ -106,7 +106,6 @@ void setup() {
 
     WiFi.onEvent(WiFiEvent);
     buttons_setup();
-    memset(tallyState, 0, sizeof(tallyState));
 
 #ifdef HELTEC
     pinMode(Vext, OUTPUT);
@@ -122,7 +121,7 @@ void setup() {
 #endif
     display_setup();
 
-    setTallyLight(32, 0, 0, false);
+    setTallyLight(32, 0, 0, DISP_OFF);
 
     //  esp_sleep_enable_ext1_wakeup(BUTTON_PIN_BITMASK,ESP_EXT1_WAKEUP_ALL_LOW);
     print_wakeup_reason();
@@ -148,7 +147,7 @@ void setup() {
     display.drawString(64, 34, "SSID: " + String(cfg.wifi_ssid));
     display.drawString(64, 44, "NAME: " + String(cfg.wifi_hostname));
     d();
-    setTallyLight(0, 32, 0, false);
+    setTallyLight(0, 32, 0, DISP_OFF);
 #endif
 
     updater = new EOTAUpdate(cfg.ota_path, VERSION_NUMBER);
@@ -173,7 +172,7 @@ void setup() {
 
             while (WiFi.status() != WL_CONNECTED) {
                 delay(500);
-                setTallyLight(32 * (count & 1), 0, 32 * !(count & 1), false);
+                setTallyLight(32 * (count & 1), 0, 32 * !(count & 1), DISP_OFF);
                 count++;
                 printf("%d\n", count);
                 if (((millis() - lastConnect) > 10000) &&
@@ -223,7 +222,7 @@ void setup() {
     }
     webserver_setup();
 
-    setTallyLight(0, 0, 0, false);
+    setTallyLight(0, 0, 0, DISP_OFF);
 }
 
 
@@ -248,7 +247,7 @@ void power_off(int state) {
         d();
     }
     if (state & 2) {
-        setTallyLight(0, 0, 32, false);
+        setTallyLight(0, 0, 32, DISP_OFF);
         sleep(2);
         display.clear();
         digitalWrite(OLED_RST, LOW);  // low to reset OLED
@@ -263,11 +262,11 @@ void loop() {
     display_loop();
     buttons_loop();
     lora_loop();
-    tally_loop();
     e131dmx_loop();
     mqtt_loop();
     atem_loop();
     tsl_loop();
+    tally_loop();
 
     if (cfg.ota_path[0] && WiFi.getMode() == WIFI_MODE_STA &&
         WiFi.status() == WL_CONNECTED) {

@@ -48,7 +48,7 @@ void e131dmx_loop(void) {
                                   packet.property_values[pos + 2],
                                   packet.property_values[pos + 3]);
                 }
-                LoRaBC(packet.property_values + 1, numChannels - 1);
+                LoRaBCRGB(packet.property_values + 1, numChannels - 1);
             }
             if (addr == cfg.tally_id) {
                 setTallyLight(r, g, b);

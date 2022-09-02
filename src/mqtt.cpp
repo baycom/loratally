@@ -13,6 +13,8 @@ void mqttCallback(char *topic, byte *payload, unsigned int length) {
     int b = 0;
     int addr = 0;
     int state = -1;
+    int brightness = 3;
+    char text[100] = {0};
 
 #ifdef DEBUG
     Serial.print("Message arrived [");
@@ -29,12 +31,15 @@ void mqttCallback(char *topic, byte *payload, unsigned int length) {
         if (json.containsKey("b")) b = json["b"];
         if (json.containsKey("addr")) addr = json["addr"];
         if (json.containsKey("state")) state = json["state"];
+        if (json.containsKey("brightness")) brightness = json["brightness"];
+        if (json.containsKey("text")) strncpy(text, json["text"], sizeof(text)-1);
         if (state != -1) {
-            setTallyState(addr, state);
-            commandBC();
+            if(setTallyState(addr, state, brightness, text)) {
+                LoRaBCTS();
+            }
         }
         if (addr == cfg.tally_id) {
-            rgbFromTSL(r, g, b, 3, state);
+            rgbFromTSL(r, g, b, state, 3);
             setTallyLight(r, g, b);
         }
         LoRaSend(addr, r, g, b);

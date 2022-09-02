@@ -4,11 +4,14 @@
 #include <LoRa.h>
 
 #define CMD_VERSION 3
+#define LORA_MAX_RGB 32
+#define LORA_MAX_TS 32
 
 typedef enum {
     cmd_TALLY = 1,
     cmd_STATUS = 2,
-    cmd_BROADCAST = 3
+    cmd_BROADCAST = 3,
+    cmd_BC_TS = 4
 } tally_cmd_t;
 
 typedef union {
@@ -35,6 +38,11 @@ typedef union {
         uint8_t rgb[32];
     } b;
     struct {
+        uint8_t version;
+        uint8_t cmd;
+        uint8_t tally_state[32];
+    } bts;
+    struct {
         uint32_t ui32_1;
         uint32_t ui32_2;
         uint32_t ui32_3;
@@ -54,8 +62,9 @@ typedef union {
 extern int RSSIlast;
 
 void lora_setup();
-int LoRaSend(uint8_t addr, uint8_t r, uint8_t g, uint8_t b, bool disp = true);
-int LoRaBC(uint8_t *property_values, int numChannels, bool disp = true);
+int LoRaSend(uint8_t addr, uint8_t r, uint8_t g, uint8_t b, bool disp = false);
+int LoRaBCRGB(uint8_t *property_values, int numChannels, bool disp = false);
+int LoRaBCTS(void);
 void commandBC(void);
 void lora_loop();
 

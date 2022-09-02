@@ -2,17 +2,25 @@
 
 NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip(256, PixelPin);
 
-uint8_t tallyState[TALLY_MAX_NUM];
 unsigned long tallyLast = 0;
 static bool tallyCleared = false;
 
+static uint8_t tallyState[TALLY_MAX_NUM];
+static uint8_t tallyBrightness[TALLY_MAX_NUM];
+static bool tally_changed = false;
+static char tallyText[100];
+
 void localtally_setup() {
-        strip.Begin();
+    memset(tallyState, 0, sizeof(tallyState));
+    strip.Begin();
 }
 
-void rgbFromTSL(int &r, int &g, int &b, int brightness, int state) {
+void rgbFromTSL(int &r, int &g, int &b, int state, int brightness, bool atem) {
     brightness++;
     r = g = b = 0;
+    if (atem && state == 3) {
+        state = 1;
+    }
     switch (state) {
         case 1:
             r = 63 * brightness;
@@ -27,13 +35,44 @@ void rgbFromTSL(int &r, int &g, int &b, int brightness, int state) {
     }
 }
 
-void setTallyState(int index, int state) {
+bool setTallyState(int index, uint8_t state, uint8_t brightness, char *text) {
     if (index < TALLY_MAX_NUM) {
-        tallyState[index - 1] = state;
+        if (index == cfg.tally_id) {
+            if (text) {
+                strncpy(tallyText, text, sizeof(tallyText) - 1);
+            } else {
+                tallyText[0] = 0;
+            }
+        }
+        if (tallyState[index - 1] != state ||
+            tallyBrightness[index - 1] != brightness) {
+            tallyState[index - 1] = state;
+            tallyBrightness[index - 1] = brightness;
+            tally_changed = true;
+        }
     }
+    return tally_changed;
 }
 
-void setTallyLight(int r, int g, int b, bool disp, int pixel, char *text) {
+bool getTallyState(int index, uint8_t &state, uint8_t &brightness) {
+    if (index < TALLY_MAX_NUM) {
+        state = tallyState[index - 1];
+        brightness = tallyBrightness[index - 1];
+        return true;
+    }
+    return false;
+}
+
+bool getTallyChanged(bool clear) {
+    bool val = tally_changed;
+    if (clear) {
+        tally_changed = false;
+    }
+    return val;
+}
+
+void setTallyLight(int r, int g, int b, dispMode_t disp, int pixel,
+                   char *text) {
     tallyLast = millis();
 
     if (r || g || b) {
@@ -51,34 +90,57 @@ void setTallyLight(int r, int g, int b, bool disp, int pixel, char *text) {
         }
     } else {
         if (pixel <= cfg.num_pixels)
-            strip.SetPixelColor(pixel, RgbColor(r, g, b));
+            strip.SetPixelColor(pixel - 1, RgbColor(r, g, b));
     }
     strip.Show();
-    if (disp) {
+    if (disp > DISP_OFF) {
         if (text != NULL && strlen(text)) {
             display.clear();
             display.setTextAlignment(TEXT_ALIGN_CENTER);
             display.setFont(ArialMT_Plain_24);
             display.drawString(64, 20, text);
-            d();
         } else if (r | g | b) {
             display.clear();
             display.setTextAlignment(TEXT_ALIGN_CENTER);
-            display.setFont(ArialMT_Plain_10);
-            display.drawString(64, 4, "Addr : " + String(cfg.tally_id));
-            display.drawString(64, 14, "Red  : " + String(r));
-            display.drawString(64, 24, "Green: " + String(g));
-            display.drawString(64, 34, "Blue : " + String(b));
-            display.drawString(64, 44, "RSSI : " + String(RSSIlast));
-            d();
+            display.setFont(ArialMT_Plain_24);
+            display.drawString(64, 4, "Tally " + String(cfg.tally_id));
         }
+        /*
+                    display.drawString(64, 14, "Red  : " + String(r));
+                    display.drawString(64, 24, "Green: " + String(g));
+                    display.drawString(64, 34, "Blue : " + String(b));
+        */
+        if (disp == DISP_RSSI) {
+            display.setFont(ArialMT_Plain_10);
+            display.drawString(64, 44, "RSSI : " + String(RSSIlast));
+        }
+        d();
     }
 #endif
 }
-void tally_loop() {
-    if ((millis() - tallyLast > cfg.tally_timeout) && !tallyCleared) {
-        setTallyLight(0, 0, 0, false);
-        tallyCleared = true;
+
+void setTallyLight(int tally_id, dispMode_t disp, int pixel, char *text) {
+    uint8_t state, brightness;
+    if (pixel < 2) {
+        tally_id |= TALLY_RH;
+    } else {
+        tally_id |= TALLY_LH;
+    }
+    if (getTallyState(tally_id, state, brightness)) {
+        int r, g, b;
+        rgbFromTSL(r, g, b, state, brightness);
+        setTallyLight(r, g, b, disp, pixel, text);
     }
 }
 
+void tally_loop() {
+    if (getTallyChanged()) {
+        setTallyLight(cfg.tally_id, DISP_ON, 1, tallyText);
+        setTallyLight(cfg.tally_id, DISP_OFF, 2);
+    }
+
+    if ((millis() - tallyLast > cfg.tally_timeout) && !tallyCleared) {
+        setTallyLight(0, 0, 0, DISP_OFF);
+        tallyCleared = true;
+    }
+}

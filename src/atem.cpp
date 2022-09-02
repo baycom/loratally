@@ -20,35 +20,21 @@ void atem_setup() {
 
 void atem_loop() {
     uint8_t property_vals[TALLY_MAX_NUM * 3];
-    bool tally_changed = false;
 
     if (cfg.atem_host[0] && eth_connected) {
         AtemSwitcher.runLoop();
         if (AtemSwitcher.hasInitialized()) {
+            bool tallyChanged = false;
             uint16_t indexSources = AtemSwitcher.getTallyByIndexSources();
             if (indexSources > TALLY_MAX_NUM) {
                 indexSources = TALLY_MAX_NUM;
             }
             for (uint16_t n = 0; n < indexSources; n++) {
-                uint8_t tally = AtemSwitcher.getTallyByIndexTallyFlags(n);
-                if (tally != tallyState[n]) {
-                    printf("Tally: %d State: %d\n", n, tally);
-                    tallyState[n] = tally;
-                    tally_changed = true;
-                }
-                uint8_t ts = tallyState[n];
-                property_vals[n * 3] = (ts & 1) ? 192 : 0;
-                property_vals[(n * 3) + 1] =
-                    (!property_vals[n * 3] && ts & 2) ? 192 : 0;
-                property_vals[(n * 3) + 2] = 0;
+                uint8_t tallyState = AtemSwitcher.getTallyByIndexTallyFlags(n);
+                tallyChanged |= setTallyState(n, tallyState, 3);
             }
-            if (tally_changed) {
-                uint16_t pos = cfg.tally_id - 1;
-                if (indexSources >= pos) {
-                    setTallyLight(property_vals[pos * 3],
-                                  property_vals[pos * 3 + 1], 0);
-                }
-                LoRaBC(property_vals, indexSources * 3, false);
+            if(tallyChanged) {
+                LoRaBCTS();
             }
         }
     }
