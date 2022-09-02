@@ -31,7 +31,8 @@ void atem_loop() {
             }
             for (uint16_t n = 0; n < indexSources; n++) {
                 uint8_t tallyState = AtemSwitcher.getTallyByIndexTallyFlags(n);
-                tallyChanged |= setTallyState(n, tallyState, 3);
+                tallyChanged |= setTallyState(n|TALLY_RH, tallyState, 3);
+                tallyChanged |= setTallyState(n|TALLY_LH, tallyState, 3);
             }
             if(tallyChanged) {
                 LoRaBCTS();
