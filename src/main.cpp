@@ -4,7 +4,7 @@ bool eth_connected = false;
 
 #ifdef HELTEC
 bool heltec = true;
-#else 
+#else
 bool heltec = false;
 #endif
 
@@ -19,22 +19,22 @@ static void print_wakeup_reason() {
 
     switch (wakeup_reason) {
         case ESP_SLEEP_WAKEUP_EXT0:
-            Serial.println("Wakeup caused by external signal using RTC_IO");
+            dbg("Wakeup caused by external signal using RTC_IO");
             break;
         case ESP_SLEEP_WAKEUP_EXT1:
-            Serial.println("Wakeup caused by external signal using RTC_CNTL");
+            dbg("Wakeup caused by external signal using RTC_CNTL");
             break;
         case ESP_SLEEP_WAKEUP_TIMER:
-            Serial.println("Wakeup caused by timer");
+            dbg("Wakeup caused by timer");
             break;
         case ESP_SLEEP_WAKEUP_TOUCHPAD:
-            Serial.println("Wakeup caused by touchpad");
+            dbg("Wakeup caused by touchpad");
             break;
         case ESP_SLEEP_WAKEUP_ULP:
-            Serial.println("Wakeup caused by ULP program");
+            dbg("Wakeup caused by ULP program");
             break;
         default:
-            Serial.printf("Wakeup was not caused by deep sleep: %d\n",
+            dbg("Wakeup was not caused by deep sleep: %d\n",
                           wakeup_reason);
             break;
     }
@@ -46,9 +46,7 @@ static void print_wakeup_reason() {
 }
 
 void WiFiEvent(WiFiEvent_t event) {
-#ifdef DEBUG
-    printf("WiFiEvent: %d\n", event);
-#endif
+    dbg("WiFiEvent: %d\n", event);
     switch (event) {
         case ARDUINO_EVENT_ETH_START:
             Serial.println("ETH Started");
@@ -72,7 +70,7 @@ void WiFiEvent(WiFiEvent_t event) {
         case ARDUINO_EVENT_WIFI_STA_GOT_IP:
             if (!eth_connected) {
                 if (!MDNS.begin(cfg.wifi_hostname)) {
-                    printf("MDNS responder failed to start\n");
+                    err("MDNS responder failed to start\n");
                 }
                 e131_setup();
                 mqtt_setup();
@@ -97,9 +95,9 @@ void WiFiEvent(WiFiEvent_t event) {
 void setup() {
     randomSeed(analogRead(5));
     Serial.begin(115200);
-    printf("Version: %s, Version Number: %d, CFG Number: %d\n", VERSION_STR,
-           VERSION_NUMBER, cfg_ver_num);
-    printf("Initializing ... ");
+    info("Version: %s-%s-%s, Version Number: %d, CFG Number: %d\n",
+           VERSION_STR, PLATFORM_STR, BUILD_STR, VERSION_NUMBER, cfg_ver_num);
+    info("Initializing ... ");
 
     EEPROM.begin(EEPROM_SIZE);
     read_config();
@@ -165,7 +163,7 @@ void setup() {
             WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
             WiFi.begin(cfg.wifi_ssid, cfg.wifi_secret);
 
-            printf("\n");
+            info("\n");
 
             unsigned long lastConnect = millis();
             int count = 0;
@@ -174,7 +172,7 @@ void setup() {
                 delay(500);
                 setTallyLight(32 * (count & 1), 0, 32 * !(count & 1), DISP_OFF);
                 count++;
-                printf("%d\n", count);
+                info("%d\n", count);
                 if (((millis() - lastConnect) > 10000) &&
                     cfg.wifi_ap_fallback) {
                     if (cfg.wifi_ap_fallback < 2) {
@@ -184,9 +182,9 @@ void setup() {
                 }
             }
             if (cfg.wifi_opmode == OPMODE_WIFI_STATION && count < 21) {
-                printf("\n");
-                printf("Connected to %s\n", cfg.wifi_ssid);
-                printf("STA IP address: %s\n",
+                info("\n");
+                info("Connected to %s\n", cfg.wifi_ssid);
+                info("STA IP address: %s\n",
                        WiFi.localIP().toString().c_str());
 
                 display.setFont(ArialMT_Plain_10);
@@ -194,7 +192,7 @@ void setup() {
                 d();
             } else {
                 WiFi.disconnect();
-                printf(
+                warn(
                     "\nFailed to connect to SSID %s falling back to AP mode\n",
                     cfg.wifi_ssid);
                 strcpy(cfg.wifi_ssid, "RPS");
@@ -204,7 +202,7 @@ void setup() {
         if (cfg.wifi_opmode == OPMODE_WIFI_ACCESSPOINT) {
             WiFi.softAP(cfg.wifi_ssid, cfg.wifi_secret);
             IPAddress IP = WiFi.softAPIP();
-            printf("AP IP address: %s\n", IP.toString().c_str());
+            info("AP IP address: %s\n", IP.toString().c_str());
             display.setFont(ArialMT_Plain_10);
             for (int x = 0; x < 128; x++) {
                 for (int y = 0; y < 20; y++) {
@@ -213,8 +211,9 @@ void setup() {
             }
             display.drawString(
                 64, 24,
-                "WIFI: " +
-                    String((cfg.wifi_opmode == OPMODE_WIFI_STATION) ? "STA" : "AP"));
+                "WIFI: " + String((cfg.wifi_opmode == OPMODE_WIFI_STATION)
+                                      ? "STA"
+                                      : "AP"));
             display.drawString(64, 34, "SSID: " + String(cfg.wifi_ssid));
             display.drawString(64, 54, "IP: " + IP.toString());
             d();
@@ -225,11 +224,10 @@ void setup() {
     setTallyLight(0, 0, 0, DISP_OFF);
 }
 
-
 static void wifi_loop() {
     if (WiFi.getMode() == WIFI_MODE_STA && WiFi.status() == WL_DISCONNECTED) {
         if (millis() - lastReconnect > 5000) {
-            printf("lost WIFI connecion - trying to reconnect\n");
+            warn("lost WIFI connecion - trying to reconnect\n");
             WiFi.reconnect();
             WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
             WiFi.setHostname(cfg.wifi_hostname);

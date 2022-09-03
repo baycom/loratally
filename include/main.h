@@ -27,8 +27,18 @@
 #include "TSLReceiver.h"
 #include "webserver.h"
 
+#ifdef DEBUG
+  #define dbg(format, arg...) {printf("%s:%d " format , __FILE__ , __LINE__ , ## arg);}
+  #define err(format, arg...) {printf("%s:%d " format , __FILE__ , __LINE__ , ## arg);}
+  #define info(format, arg...) {printf("%s:%d " format , __FILE__ , __LINE__ , ## arg);}
+  #define warn(format, arg...) {printf("%s:%d " format , __FILE__ , __LINE__ , ## arg);}
+#else
+  #define dbg(format, arg...) do {} while (0)
+  #define err(format, arg...) {printf("%s:%d " format , __FILE__ , __LINE__ , ## arg);}
+  #define info(format, arg...) {printf("%s:%d " format , __FILE__ , __LINE__ , ## arg);}
+  #define warn(format, arg...) {printf("%s:%d " format , __FILE__ , __LINE__ , ## arg);}
+#endif 
 
-//#undef DEBUG
 #define BAND 868E6
 #define BATTVOLT() (analogReadMilliVolts(GPIO_BATTERY)*(100.0+220.0)/100.0)
 

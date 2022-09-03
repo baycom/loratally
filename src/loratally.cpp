@@ -13,7 +13,7 @@ void lora_setup() {
     LoRa.setPins(LoRa_CS, LoRa_RST, LoRa_DIO0);
 
     if (!LoRa.begin(BAND)) {
-        printf("SX1276 fail\n");
+        err("SX1276 fail\n");
         display.clear();
         display.setTextAlignment(TEXT_ALIGN_CENTER);
         display.setFont(ArialMT_Plain_24);
@@ -38,6 +38,14 @@ void lora_setup() {
 #endif
 }
 
+uint16_t LoRaGetMsgCnt(void) {
+    return msg_cnt;
+}
+
+int LoRaGetRSSI(void) {
+    return RSSIlast;
+}
+
 int LoRaSend(uint8_t addr, uint8_t r, uint8_t g, uint8_t b, bool disp) {
     tallyCMD_t t;
     memset(&t, 0, sizeof(tallyCMD_t));
@@ -58,14 +66,15 @@ int LoRaSend(uint8_t addr, uint8_t r, uint8_t g, uint8_t b, bool disp) {
         display.drawString(64, 34, "Blue : " + String(t.t.b));
         d();
     }
-#ifdef DEBUG
-    printf("crc32: %08x\n", t.dw.crc32);
-    printf("E1.31 -> Lora: ");
+    dbg("crc32: %08x\n", t.dw.crc32);
+    dbg("E1.31 -> Lora: ");
+    #ifdef DEBUG
     for (int i = 0; i < sizeof(t); i++) {
         printf("%02X ", t.b8[i]);
     }
-    printf("\n");
-#endif
+    #endif
+    dbg("\n");
+
     LoRa.beginPacket();
     LoRa.write(t.b8, sizeof(t));
     LoRa.endPacket();
@@ -131,16 +140,12 @@ int LoRaBCRGB(uint8_t *property_values, int numChannels, bool disp) {
         uint8_t g = property_values[(i * 3) + 1];
         uint8_t b = property_values[(i * 3) + 2];
         uint8_t y = (0.3333 * r + 0.3333 * g + 0.3333 * b);
-#ifdef DEBUG
-        printf("LoRaBC1: r: %d g: %d b: %d y: %d\n", r, g, b, y);
-#endif
+        dbg("LoRaBC1: r: %d g: %d b: %d y: %d\n", r, g, b, y);
         r >>= 6;
         b >>= 6;
         g >>= 6;
         y >>= 6;
-#ifdef DEBUG
-        printf("LoRaBC2: y: %d r: %d g: %d b: %d\n", y, r, g, b);
-#endif
+        dbg("LoRaBC2: y: %d r: %d g: %d b: %d\n", y, r, g, b);
         t.b.rgb[i] = y << 6 | g << 4 | b << 2 | r;
     }
     t.dw.crc32 = CRC32::calculate(t.b8, sizeof(tallyCMD_t) - sizeof(uint32_t));
@@ -153,14 +158,13 @@ int LoRaBCRGB(uint8_t *property_values, int numChannels, bool disp) {
         d();
     }
 
-#ifdef DEBUG
-    printf("crc32: %08x\n", t.dw.crc32);
-    printf("E1.31 -> Lora: ");
+    dbg("crc32: %08x\n", t.dw.crc32);
+    dbg("E1.31 -> Lora: ");
     for (int i = 0; i < sizeof(t); i++) {
-        printf("%02X ", t.b8[i]);
+        dbg("%02X ", t.b8[i]);
     }
-    printf("\n");
-#endif
+    dbg("\n");
+
     LoRa.beginPacket();
     LoRa.write(t.b8, sizeof(t));
     LoRa.endPacket();
@@ -195,11 +199,9 @@ static void tallyFromEncoded(uint8_t *encodedrgb, uint8_t tally_id) {
     uint8_t g = gx << y << 5;
     uint8_t b = bx << y << 5;
     uint8_t r = rx << y << 5;
-#ifdef DEBUG
-    printf("tallyFromEncoded: %d %d\n", v, tally_id);
-    printf("gx: %d rx: %d bx %d y: %d\n", gx, rx, bx, y);
-    printf("r: %d g: %d b %d \n", r, g, b);
-#endif
+    dbg("tallyFromEncoded: %d %d\n", v, tally_id);
+    dbg("gx: %d rx: %d bx %d y: %d\n", gx, rx, bx, y);
+    dbg("r: %d g: %d b %d \n", r, g, b);
     setTallyLight(r, g, b, DISP_RSSI);
 }
 
@@ -207,9 +209,7 @@ void lora_loop() {
     int packetSize = LoRa.parsePacket();
     if (packetSize) {
         int rssi = LoRa.packetRssi();
-#ifdef DEBUG
-        printf("incoming packet: %d RSSI %d\n", packetSize, rssi);
-#endif
+        dbg("incoming packet: %d RSSI %d\n", packetSize, rssi);
         if (packetSize == sizeof(tallyCMD_t)) {
             tallyCMD_t t;
             LoRa.readBytes(t.b8, sizeof(t));
@@ -217,38 +217,36 @@ void lora_loop() {
             for (int i = 0; i < packetSize; i++) {
                 printf("%02X ", t.b8[i]);
             }
-            printf("\n");
-#endif
+#endif            
+            dbg("\n");
             uint32_t crc32 =
                 CRC32::calculate(t.b8, sizeof(tallyCMD_t) - sizeof(uint32_t));
-#ifdef DEBUG
-            printf("crc32: %08x %08x\n", t.dw.crc32, crc32);
-#endif
+            dbg("crc32: %08x %08x\n", t.dw.crc32, crc32);
+#
             if (t.dw.crc32 == crc32) {
                 if (t.t.version <= CMD_VERSION) {
-                    RSSIlast = rssi;
                     if (t.t.cmd == cmd_TALLY && t.t.addr == cfg.tally_id) {
                         msg_cnt++;
+                        RSSIlast = rssi;
                         setTallyLight(t.t.r, t.t.g, t.t.b, DISP_RSSI);
                     } else if (t.b.cmd == cmd_BROADCAST) {
                         msg_cnt++;
-#ifdef DEBUG
-                        printf("Tally Broadcast:\n");
-#endif
+                        RSSIlast = rssi;
+                        dbg("Tally Broadcast:\n");
                         tallyFromEncoded(t.b.rgb, cfg.tally_id);
                     } else if (t.t.cmd == cmd_BC_TS) {
+                        RSSIlast = rssi;
                         for (int i = 0; i < LORA_MAX_TS; i++) {
                             LoRaDecodeTallyState(i + 1, t.bts.tally_state[i]);
                         }
                     } else if (t.t.cmd == cmd_STATUS) {
                         DynamicJsonDocument json(256);
-#ifdef DEBUG
-                        printf("Tally Status:\n");
-                        printf("Addr     : %d\n", t.s.addr);
-                        printf("Voltage  : %d\n", t.s.voltage);
-                        printf("MsgCount : %d\n", t.s.msgcnt);
-                        printf("RSSI     : %d\n\n", t.s.rssi);
-#endif
+                        dbg("Tally Status:\n");
+                        dbg("Addr     : %d\n", t.s.addr);
+                        dbg("Voltage  : %d\n", t.s.voltage);
+                        dbg("MsgCount : %d\n", t.s.msgcnt);
+                        dbg("RSSI     : %d\n\n", t.s.rssi);
+
                         json["version"] = CMD_VERSION;
                         json["address"] = t.s.addr;
                         json["voltage"] = t.s.voltage;
@@ -264,23 +262,19 @@ void lora_loop() {
                         String topic = "tally/status/" + String(cfg.tally_id);
                         boolean ret =
                             mqtt_publish(topic.c_str(), output.c_str());
-#ifdef DEBUG
-                        printf("ret: %d json: %s\n", ret, output.c_str());
-#endif
+                        dbg("ret: %d json: %s\n", ret, output.c_str());
                     }
                 } else {
-                    printf("protocol version mismatch: %d %d\n", t.t.version,
+                    warn("protocol version mismatch: %d %d\n", t.t.version,
                            CMD_VERSION);
                 }
             } else {
-                printf("crc32 failed\n");
+                warn("crc32 failed\n");
             }
         }
     }
     if (cfg.status_interval && (millis() - statusLast) > cfg.status_interval) {
-#ifdef DEBUG
-        printf("Transmit status:\n");
-#endif
+        dbg("Transmit status:\n");
         tallyCMD_t s;
         s.s.version = CMD_VERSION;
         s.s.cmd = cmd_STATUS;

@@ -2,8 +2,10 @@
 
 NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip(256, PixelPin);
 
+
 unsigned long tallyLast = 0;
 static bool tallyCleared = false;
+static unsigned long statusLast = 0;
 
 static uint8_t tallyState[TALLY_MAX_NUM];
 static uint8_t tallyBrightness[TALLY_MAX_NUM];
@@ -13,6 +15,37 @@ static char tallyText[100];
 void localtally_setup() {
     memset(tallyState, 0, sizeof(tallyState));
     strip.Begin();
+}
+
+void sendStatus(void) {
+    DynamicJsonDocument json(128);
+    String output;
+    json["cmd"] = "STATUS";
+    json["version"] = VERSION_STR "-" PLATFORM_STR "-" BUILD_STR;
+    json["uptime"] = millis()/1000;
+    json["battVolt"] = BATTVOLT();
+    json["LoRaMsgCnt"] = LoRaGetMsgCnt();
+    json["LoRaRSSI"] = LoRaGetRSSI();
+
+    serializeJson(json, output);
+    ws2All(output.c_str());
+}
+
+void sendTally(void) {
+    DynamicJsonDocument json(128);
+    String output;
+    uint8_t stateRH, brightnessRH;
+    uint8_t stateLH, brightnessLH;
+    if (getTallyState(cfg.tally_id|TALLY_RH, stateRH, brightnessRH) && getTallyState(cfg.tally_id|TALLY_LH, stateLH, brightnessLH)) {
+        json["cmd"] = "TALLY";
+        json["stateLH"] = stateLH;
+        json["brightnessLH"] = brightnessLH;
+        json["stateRH"] = stateRH;
+        json["brightnessRH"] = brightnessRH;
+        json["text"] = tallyText;
+        serializeJson(json, output);
+        ws2All(output.c_str());
+    }
 }
 
 void rgbFromTSL(int &r, int &g, int &b, int state, int brightness, bool atem) {
@@ -48,14 +81,14 @@ bool setTallyState(int index, uint8_t state, uint8_t brightness, char *text) {
             tallyBrightness[index - 1] != brightness) {
             tallyState[index - 1] = state;
             tallyBrightness[index - 1] = brightness;
-            tally_changed = true;
+            tally_changed = true;           
         }
     }
     return tally_changed;
 }
 
 bool getTallyState(int index, uint8_t &state, uint8_t &brightness) {
-    if (index < TALLY_MAX_NUM) {
+    if (index >=0 && index < TALLY_MAX_NUM) {
         state = tallyState[index - 1];
         brightness = tallyBrightness[index - 1];
         return true;
@@ -135,12 +168,19 @@ void setTallyLight(int tally_id, dispMode_t disp, int pixel, char *text) {
 
 void tally_loop() {
     if (getTallyChanged()) {
-        setTallyLight(cfg.tally_id, DISP_ON, 1, tallyText);
-        setTallyLight(cfg.tally_id, DISP_OFF, 2);
+        if(cfg.tally_id > 0 && cfg.tally_id < (TALLY_MAX_NUM/2)) {
+            setTallyLight(cfg.tally_id, DISP_ON, 1, tallyText);
+            setTallyLight(cfg.tally_id, DISP_OFF, 2);
+            sendTally();
+        }
     }
 
     if ((millis() - tallyLast > cfg.tally_timeout) && !tallyCleared) {
         setTallyLight(0, 0, 0, DISP_OFF);
         tallyCleared = true;
+    }
+    if ((millis() - statusLast) > 1000) {
+        statusLast = millis();
+        sendStatus();
     }
 }

@@ -1,45 +1,16 @@
 var settings;
+var tallyState;
 
 var settingsButton=document.getElementById("settings");
-var osdSpan=document.getElementById("osd");
+var container1=document.getElementById("container1");
 var line1Span=document.getElementById("line1");
 var line2Span=document.getElementById("line2");
-var osdDiv=document.getElementById("osddiv");
 var modal = document.getElementById('myModal');
 var closeModal = document.getElementsByClassName("close")[0];
 var statusSpan=document.getElementById("status");
 var saveButton = document.getElementById("save");
 var rebootButton = document.getElementById("reboot");
 var factoryresetButton = document.getElementById("factoryreset");
-
-function checkKeycode(event) {
-  // handling Internet Explorer stupidity with window.event
-  // @see http://stackoverflow.com/a/3985882/517705
-  var keyDownEvent = event || window.event,
-      keycode = (keyDownEvent.which) ? keyDownEvent.which : keyDownEvent.keyCode;
-  console.log("key code: " + keycode);
-  switch(keycode) {
-    case 8: numpad.delete(); break;
-    case 13: numpad.select(); break;
-    case 27: numpad.hide(); break;
-    default:
-      if((keycode>=0x60) && (keycode<=0x69)) {
-        keycode-=0x30;
-      }
-      if((keycode>=0x30) && (keycode<=0x39)) {
-        numpad.status.value = "";
-        var current=numpad.display.value;
-        keycode-=0x30;
-        if ( current.length < numpad.max) {
-          if (current=="0") {
-            numpad.display.value = keycode;
-          } else {
-            numpad.display.value += keycode;
-          }      
-      }
-    }
-  }
-}
 
 function formToJSON()
 {
@@ -147,30 +118,6 @@ function postSettings(json) {
   xmlhttp.send(json);
 }
 
-function page(pager_num) {
-  var xmlhttp = new XMLHttpRequest();
-  if(settings["default_mode"] == 1) {
-    pager_num=(pager_num&0x1fff)*8+700000;
-  }
-  var url = "page?pager_number="+pager_num;
-
-  xmlhttp.onreadystatechange = function() {
-    console.log("page: readyState:"+this.readyState+" status:"+this.status);
-    if (this.readyState == 4) {
-      if (this.status == 200) {
-        numpad.status.value="OK";
-      } else {
-        numpad.status.value="FAIL";
-        if(this.status < 400) {
-          page(pager_num);
-        }
-      }
-    }
-  };
-  xmlhttp.open("GET", url, true);
-  xmlhttp.send();
-}
-
 function reboot() {
   var xmlhttp = new XMLHttpRequest();
   var url = "reboot";
@@ -196,16 +143,15 @@ function factoryreset() {
 }
 
 settingsButton.onclick  = function()    {
-  document.onkeydown = "";
   getSettings();
   modal.style.display = "block";
 };
+
 closeModal.onclick = function()         {
-  document.onkeydown = checkKeycode;
   modal.style.display = "none"; 
 };
+  
 saveButton.onclick = function()         {
-  document.onkeydown = checkKeycode;
   modal.style.display = "none"; 
   jsonStr=formToJSON();
   console.log(jsonStr);
@@ -222,13 +168,77 @@ factoryresetButton.onclick = function () {
     factoryreset();
   }
 }
-window.onclick = function(event) {
-  if (event.target == modal) {
-      document.onkeydown = checkKeycode;
-      modal.style.display = "none";
+
+function fancyTimeFormat(time) {
+  // Hours, minutes and seconds
+  var days = ~~(time / 86400);
+  var hrs = ~~((time % 86400) / 3600);
+  var mins = ~~((time % 3600) / 60);
+  var secs = time % 60;
+
+  // Output like "1:01" or "4:03:59" or "123:03:59"
+  var ret = "";
+
+  if (days > 0) {
+      ret += "" + days + "." + (hrs < 10 ? "0" : "");
+  }
+  if (hrs > 0) {
+      ret += "" + hrs + ":" + (mins < 10 ? "0" : "");
+  }else {
+      if(days > 0) {
+          ret += ":";
+      }
+  }
+
+  ret += "" + mins + ":" + (secs < 10 ? "0" : "");
+  ret += "" + secs;
+  return ret;
+}
+
+function wsConnect() {
+  if(window.location.href.indexOf("http") > -1) {
+    websocket = new WebSocket('ws://'+location.hostname+'/ws');
+  } else{  
+    websocket = new WebSocket('ws://192.168.4.1/');
+  }
+  websocket.onopen = function (evt) {
+    console.log('WebSocket connection opened');
+  }
+  websocket.onmessage = function (evt) {
+    tallyCMD=JSON.parse(evt.data);
+    if(tallyCMD.cmd == 'STATUS') {
+      line1Span.innerHTML = " Version: " + tallyCMD.version + " Uptime: " + fancyTimeFormat(tallyCMD.uptime) + " Battery: " + (tallyCMD.battVolt/1000).toFixed(2) + "V" + " LoRaRSSI: " + tallyCMD.LoRaRSSI + "dBm"+ " LoRaMsgCnt: " + tallyCMD.LoRaMsgCnt;
+    }
+    if(tallyCMD.cmd == 'TALLY') {
+      line2Span.innerHTML = " TallyRH: " + tallyCMD.stateRH + "/" + tallyCMD.brightnessRH + " - " + " TallyLH: " + tallyCMD.stateLH + "/" + tallyCMD.brightnessLH + " Text: " +  tallyCMD.text;
+      switch(tallyCMD.stateRH) {
+        case 1:
+            container1.style.backgroundColor='#ff0000';
+            container1.style.color='#ffffff';
+          break;
+        case 2:
+            container1.style.backgroundColor='#00ff00';
+            container1.style.color='#101010';
+          break;
+        case 3:
+            container1.style.backgroundColor='#ffff20';
+            container1.style.color='#101010';
+          break;
+        default:
+          container1.style.backgroundColor='#000000';
+          container1.style.color='#ffffff';
+        }
+      container1.textContent=tallyCMD.text;
+    }
+  }
+  websocket.onclose = function (evt) {
+    console.log('Websocket connection closed');
+    setTimeout(function () { wsConnect() }, 3000);
+  }
+  websocket.onerror = function (evt) {
+    console.log('Websocket error: ' + evt);
   }
 }
 
 getSettings();
-
-document.onkeydown = checkKeycode;
+wsConnect();

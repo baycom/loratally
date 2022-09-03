@@ -50,9 +50,8 @@ void buttons_loop() {
             button1.up = 0;
             button1.down = 0;
             float volt = BATTVOLT() / 1000.0;
-#ifdef DEBUG
-            printf("voltage: %f\n", volt);
-#endif
+            dbg("voltage: %f\n", volt);
+
             display.clear();
             display.setTextAlignment(TEXT_ALIGN_CENTER);
             display.setFont(ArialMT_Plain_10);

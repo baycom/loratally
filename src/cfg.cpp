@@ -42,31 +42,31 @@ void read_config(void)
     cfg.version = cfg_ver_num;
     write_config();
   }
-  printf("Settings:\n");
-  printf("cfg version     : %d\n", cfg.version);
-  printf("ssid            : %s\n", cfg.wifi_ssid);
-  printf("wifi_secret     : %s\n", cfg.wifi_secret);
-  printf("wifi_hostname   : %s\n", cfg.wifi_hostname);
-  printf("wifi_opmode     : %d\n", cfg.wifi_opmode);
-  printf("wifi_powersave  : %d\n", cfg.wifi_powersave);
-  printf("wifi_ap_fallback: %d\n", cfg.wifi_ap_fallback);
-  printf("ota_path        : %s\n", cfg.ota_path);
-  printf("tx_frequency    : %.6fMhz\n", cfg.tx_frequency/1E6);
-  printf("bandwidth       : %.1fkHz\n", cfg.bandwidth/1E3);
-  printf("tx_power        : %ddBm\n", cfg.tx_power);
-  printf("spreading factor: %d\n", cfg.sf);
-  printf("syncword        : %d\n", cfg.syncword);
-  printf("tally_id        : %d\n", cfg.tally_id);
-  printf("num_pixel       : %d\n", cfg.num_pixels);
-  printf("tally_timeout   : %ldms\n", cfg.tally_timeout);
-  printf("display_timeout : %ldms\n", cfg.display_timeout);
-  printf("led_max_brightness: %d\n", cfg.led_max_brightness);
-  printf("inactivity_timeout: %ldms\n", cfg.inactivity_timeout);
-  printf("status_interval : %ldms\n", cfg.status_interval);
-  printf("command_interval: %ldms\n", cfg.command_interval);
-  printf("MQTT Host       : %s\n", cfg.mqtt_host);
-  printf("ATEM Host       : %s\n", cfg.atem_host);
-  printf("TSL Port        : %d\n", cfg.tsl_port);
+  info("Settings:\n");
+  info("cfg version     : %d\n", cfg.version);
+  info("ssid            : %s\n", cfg.wifi_ssid);
+  info("wifi_secret     : %s\n", cfg.wifi_secret);
+  info("wifi_hostname   : %s\n", cfg.wifi_hostname);
+  info("wifi_opmode     : %d\n", cfg.wifi_opmode);
+  info("wifi_powersave  : %d\n", cfg.wifi_powersave);
+  info("wifi_ap_fallback: %d\n", cfg.wifi_ap_fallback);
+  info("ota_path        : %s\n", cfg.ota_path);
+  info("tx_frequency    : %.6fMhz\n", cfg.tx_frequency/1E6);
+  info("bandwidth       : %.1fkHz\n", cfg.bandwidth/1E3);
+  info("tx_power        : %ddBm\n", cfg.tx_power);
+  info("spreading factor: %d\n", cfg.sf);
+  info("syncword        : %d\n", cfg.syncword);
+  info("tally_id        : %d\n", cfg.tally_id);
+  info("num_pixel       : %d\n", cfg.num_pixels);
+  info("tally_timeout   : %ldms\n", cfg.tally_timeout);
+  info("display_timeout : %ldms\n", cfg.display_timeout);
+  info("led_max_brightness: %d\n", cfg.led_max_brightness);
+  info("inactivity_timeout: %ldms\n", cfg.inactivity_timeout);
+  info("status_interval : %ldms\n", cfg.status_interval);
+  info("command_interval: %ldms\n", cfg.command_interval);
+  info("MQTT Host       : %s\n", cfg.mqtt_host);
+  info("ATEM Host       : %s\n", cfg.atem_host);
+  info("TSL Port        : %d\n", cfg.tsl_port);
 }
 
 String get_settings(void) {
@@ -153,7 +153,7 @@ void factory_reset(int state) {
         d();
     }
     if (state & 2) {
-        printf("RESET Config\n");
+        info("RESET Config\n");
         cfg.version = 0xff;
         write_config();
         sleep(1);

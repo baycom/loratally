@@ -32,7 +32,7 @@ class TcpReceiver {
             perror("Listen failed...");
             exit(6);
         } else if (debug)
-            printf("Server listening..\n");
+            dbg("Server listening..\n");
 
         active = true;
         state = UNKNOWN;
@@ -40,15 +40,15 @@ class TcpReceiver {
 
     void interrupt() { active = false; }
     void printMessage(const char* hdr, uint8_t* msg, int len) {
-        printf("%s\n", hdr);
+        dbg("%s\n", hdr);
         for (int i = 0; i < len / 8 + 1; i++) {
-            printf("     ");
+            dbg("     ");
             for (int j = 0; j < 8; j++) {
                 if (i * 8 + j < len) {
-                    printf("%02x ", (int)msg[i * 8 + j]);
+                    dbg("%02x ", (int)msg[i * 8 + j]);
                 }
             }
-            printf("\n");
+            dbg("\n");
         }
     }
     virtual void onMessage(uint8_t* msg, int len) {}
@@ -68,7 +68,7 @@ class TcpReceiver {
                 perror("server accept failed...\n");
                 return;
             } else if (debug)
-                printf("server accept the client...\n");
+                dbg("server accept the client...\n");
             while (read(connfd, &t, 1) == 1) {
                 switch (state) {
                     case UNKNOWN: {
@@ -91,7 +91,7 @@ class TcpReceiver {
                                 read(connfd, &b2, 1);
                                 len = b1 + (((uint16_t)b2) << 8);
                                 if (debug)
-                                    printf("received message with length %d\n",
+                                    dbg("received message with length %d\n",
                                            (int)len);
                                 break;
                             default:
@@ -249,46 +249,46 @@ class ESPTslReceiver : public TslReceiver {
         timer = time(NULL);
         tm_info = localtime(&timer);
         strftime(buffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
-        printf("received message: %s\n", buffer);
-        printf("{ \n");
-        printf("  \"%s\":%d,\n", "version", (int)m->version);
-        printf("  \"%s\":%d,\n", "flags", (int)m->flags);
-        printf("  \"%s\":%d,\n", "screen", (int)m->screen);
-        printf("  \"%s\":%s,\n", "control",
+        dbg("received message: %s\n", buffer);
+        dbg("{ \n");
+        dbg("  \"%s\":%d,\n", "version", (int)m->version);
+        dbg("  \"%s\":%d,\n", "flags", (int)m->flags);
+        dbg("  \"%s\":%d,\n", "screen", (int)m->screen);
+        dbg("  \"%s\":%s,\n", "control",
                m->flags & SCONTROL ? "true" : "false");
 #endif
         if (!(m->flags & SCONTROL)) {
 #ifdef DEBUG
-            printf("    [\n");
+            dbg("    [\n");
 #endif
             for (int i = 0; i < m->n_dmsgs; i++) {
 #ifdef DEBUG
-                printf("      {\n");
-                printf("        \"%s\": %d,\n", "index",
+                dbg("      {\n");
+                dbg("        \"%s\": %d,\n", "index",
                        (int)m->dmsgs[i]->index);
-                printf("        \"%s\": %d,\n", "rh_tally",
+                dbg("        \"%s\": %d,\n", "rh_tally",
                        (int)m->dmsgs[i]->rh);
-                printf("        \"%s\": %d,\n", "text_tally",
+                dbg("        \"%s\": %d,\n", "text_tally",
                        (int)m->dmsgs[i]->text);
-                printf("        \"%s\": %d,\n", "lh_tally",
+                dbg("        \"%s\": %d,\n", "lh_tally",
                        (int)m->dmsgs[i]->lh);
-                printf("        \"%s\": %d,\n", "brightness",
+                dbg("        \"%s\": %d,\n", "brightness",
                        (int)m->dmsgs[i]->brightness);
-                printf("        \"%s\": %s", "control",
+                dbg("        \"%s\": %s", "control",
                        m->dmsgs[i]->controlData ? "true" : "false");
                 if (!m->dmsgs[i]->controlData &&
                     m->dmsgs[i]->displayData.len != 0) {
-                    printf(",\n");
-                    printf("        \"%s\": \"%s\"\n", "displayData",
+                    dbg(",\n");
+                    dbg("        \"%s\": \"%s\"\n", "displayData",
                            m->dmsgs[i]->displayData.text);
                 } else {
-                    printf("\n");
+                    dbg("\n");
                 }
-                printf("      }");
+                dbg("      }");
                 if (i == m->n_dmsgs) {
-                    printf(",");
+                    dbg(",");
                 };
-                printf("\n");
+                dbg("\n");
 #endif
                 uint16_t index = m->dmsgs[i]->index;
                 if (index < TALLY_MAX_NUM) {
@@ -300,11 +300,11 @@ class ESPTslReceiver : public TslReceiver {
                 LoRaBCTS();
             }
 #ifdef DEBUG
-            printf("    ]\n");
+            dbg("    ]\n");
 #endif
         }
 #ifdef DEBUG
-        printf("}\n");
+        dbg("}\n");
 #endif
     }
     virtual ~ESPTslReceiver() {}

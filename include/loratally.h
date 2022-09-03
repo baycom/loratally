@@ -62,6 +62,8 @@ typedef union {
 extern int RSSIlast;
 
 void lora_setup();
+uint16_t LoRaGetMsgCnt(void);
+int LoRaGetRSSI(void);
 int LoRaSend(uint8_t addr, uint8_t r, uint8_t g, uint8_t b, bool disp = false);
 int LoRaBCRGB(uint8_t *property_values, int numChannels, bool disp = false);
 int LoRaBCTS(void);

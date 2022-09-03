@@ -58,10 +58,8 @@ boolean mqtt_setup() {
         if (mqttClient.connect(client_id.c_str())) {
             String topic = "tally/control/" + String(cfg.tally_id);
             boolean ret = mqttClient.subscribe(topic.c_str());
-#ifdef DEBUG
-            printf("CId: %s subscribe: %s -> %d conn: %d\n", client_id.c_str(),
+            dbg("CId: %s subscribe: %s -> %d conn: %d\n", client_id.c_str(),
                    topic.c_str(), ret, mqttClient.connected());
-#endif
             return true;
         }
     }

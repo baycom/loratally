@@ -11,8 +11,7 @@ void e131dmx_loop(void) {
     if (!e131.isEmpty()) {
         e131_packet_t packet;
         e131.pull(&packet);  // Pull packet from ring buffer
-#ifdef DEBUG
-        Serial.printf(
+        dbg(
             "Universe %u / %u Channels | Packet#: %u / Errors: %u / CH1: %u\n",
             htons(packet.universe),  // The Universe for this packet
             htons(packet.property_value_count) -
@@ -20,7 +19,6 @@ void e131dmx_loop(void) {
             e131.stats.num_packets,      // Packet counter
             e131.stats.packet_errors,    // Packet error counter
             packet.property_values[1]);  // Dimmer data for Channel 1
-#endif
         uint16_t numChannels = htons(packet.property_value_count) - 1;
         if (numChannels >= 3) {
             lastPacket = millis();
@@ -29,11 +27,9 @@ void e131dmx_loop(void) {
             uint8_t b;
             uint8_t addr;
 
-#ifdef DEBUG
             for (int ch = 0; ch < numChannels; ch++) {
-                printf("%d %d\n", ch, packet.property_values[ch]);
+                dbg("%d %d\n", ch, packet.property_values[ch]);
             }
-#endif
 
             addr = htons(packet.universe);
             r = packet.property_values[1];

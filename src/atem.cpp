@@ -8,7 +8,7 @@ void atem_setup() {
         if (!ATEMIp.fromString(cfg.atem_host)) {
             ATEMIp = MDNS.queryHost(cfg.atem_host);
             if (ATEMIp.toString() == "0.0.0.0") {
-                printf("cannot resolve atem host: %s\n", cfg.atem_host);
+                err("cannot resolve atem host: %s\n", cfg.atem_host);
                 return;
             }
         }

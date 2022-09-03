@@ -21,11 +21,15 @@
     }
 
     #container1 {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 100px;
+      text-align: center;
       float: left;
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: #888;
+      color: #f0f0f0;
+      background: #000000;
       padding: 0;
       margin: 0;
       -webkit-user-select: none;
@@ -37,26 +41,10 @@
       float: left;
     }
 
-    #output {
-      float: left;
-      margin: 5px;
-    }
-
-    #controls {
-      float: left;
-    }
-
-    #osd {
-      width: 20px;
-      text-align: center;
-      vertical-align: middle;
-    }
-
     @media (orientation: portrait) {
       .desktop {
         display: none;
       }
-
       ;
     }
 
@@ -151,110 +139,6 @@
       width: 250px;
     }
 
-    /* [BACKGROUND] */
-    #numpad-back {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.7);
-      visibility: hidden;
-      opacity: 0;
-      transition: 0.3s;
-    }
-
-    #numpad-back.show {
-      visibility: visible;
-      opacity: 1;
-    }
-
-    /* [NUMPAD] */
-    #numpad-wrap,
-    #numpad-display,
-    #numpad-status {
-      /* FONT - REMOVE THIS TO FOLLOW YOUR CURRENT THEME */
-      font-family: 'Arial', sans-serif;
-    }
-
-    #numpad-wrap {
-      /*  max-width: 320px; */
-      max-width: 100%;
-      margin: 0 auto;
-      padding: 10px;
-      background: #f2f2f2;
-      border: 1px solid #ccc;
-    }
-
-    /* [NUMBER DISPLAY] */
-    #numpad-display {
-      box-sizing: border-box;
-      width: 70%;
-      padding: 5px;
-      font-size: 5em;
-      text-align: center;
-      margin-bottom: 10px;
-    }
-
-    #numpad-status {
-      box-sizing: border-box;
-      width: 30%;
-      padding: 5px;
-      font-size: 5em;
-      text-align: center;
-      margin-bottom: 10px;
-    }
-
-    /* [NUMBER BUTTONS] */
-    #numpad-btns {
-      display: flex;
-      flex-direction: row;
-      flex-wrap: wrap;
-    }
-
-    .numpad-btn {
-      box-sizing: border-box;
-      width: 25%;
-      padding-top: 40px;
-      padding-bottom: 40px;
-      padding-left: 10px;
-      padding-right: 10px;
-      border: 1px solid #aaa;
-      background: #444;
-      color: #fff;
-      text-align: center;
-      font-size: 3.5em;
-    }
-
-    .numpad-btn.zero {
-      width: 50%;
-    }
-
-    .numpad-btn.zeroN {
-      width: 75%;
-    }
-
-    .numpad-btn.ninja {
-      display: none;
-    }
-
-    .numpad-btn.ng {
-      background: #333;
-    }
-
-    .numpad-btn.cx {
-      background: #B23025;
-      border: 1px solid #C73D32;
-    }
-
-    .numpad-btn.ok {
-      background: #1FA83A;
-      border: 1px solid #1FC72D;
-    }
-
-    .numpad-btn:hover {
-      cursor: pointer;
-    }
   </style>
 </head>
 
@@ -413,13 +297,6 @@
       <div id="block">
         <span id="line1"></span><br>
         <span id="line2"></span>
-      </div>
-    </div>
-    <div id="block" class="desktop">
-      <div id="osd"></div>
-    </div>
-    <div id="block">
-      <div id="controls">
       </div>
     </div>
   </div>
