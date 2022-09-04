@@ -57,6 +57,12 @@ This project is based on ESP32 boards in two different flavours:
 
 - https://heltec.org/project/wifi-lora-32/ this board is intended as a tally light primarily connected via LoRa. Any number of WS2812 (NeoPixel) LEDs might be connected to PIN23 (PixelPin defined in main.h). Usually you connect two of them where the first one is RHS and the second one is LHS.
 - https://www.olimex.com/Products/IoT/ESP32/ESP32-POE-ISO/open-source-hardware this board is intended to be used as a gateway to ethernet with PoE.
+ 
+![Tally Device 1](https://github.com/baycom/loratally/raw/main/doc/tally-device1.jpg)
+![Tally Device 2](https://github.com/baycom/loratally/raw/main/doc/tally-device2.jpg)
+![Tally Device 3](https://github.com/baycom/loratally/raw/main/doc/tally-device3.jpg)
+![Tally Device 4](https://github.com/baycom/loratally/raw/main/doc/tally-device4.jpg)
+![Tally Device 5](https://github.com/baycom/loratally/raw/main/doc/tally-device5.jpg)
 
 ## Web frontend & configuration
 
