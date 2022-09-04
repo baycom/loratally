@@ -86,12 +86,12 @@ String get_settings(void) {
     json["syncword"] = cfg.syncword;
     json["tally_id"] = cfg.tally_id;
     json["num_pixels"] = cfg.num_pixels;
-    json["tally_timeout"] = cfg.tally_timeout;
-    json["display_timeout"] = cfg.display_timeout;
+    json["tally_timeout"] = cfg.tally_timeout/1000;
+    json["display_timeout"] = cfg.display_timeout/1000;
     json["led_max_brightness"] = cfg.led_max_brightness;
-    json["status_interval"] = cfg.status_interval;
-    json["command_interval"] = cfg.command_interval;
-    json["inactivity_timeout"] = cfg.inactivity_timeout;
+    json["status_interval"] = cfg.status_interval/1000;
+    json["command_interval"] = cfg.command_interval/1000;
+    json["inactivity_timeout"] = cfg.inactivity_timeout/1000;
     json["mqtt_host"] = cfg.mqtt_host;
     json["atem_host"] = cfg.atem_host;
     json["tsl_port"] = cfg.tsl_port;
@@ -123,17 +123,17 @@ boolean parse_settings(DynamicJsonDocument json) {
     if (json.containsKey("tally_id")) cfg.tally_id = json["tally_id"];
     if (json.containsKey("num_pixels")) cfg.num_pixels = json["num_pixels"];
     if (json.containsKey("tally_timeout"))
-        cfg.tally_timeout = json["tally_timeout"];
+        cfg.tally_timeout = (int)json["tally_timeout"]*1000;
     if (json.containsKey("display_timeout"))
-        cfg.display_timeout = json["display_timeout"];
+        cfg.display_timeout = (int)json["display_timeout"]*1000;
     if (json.containsKey("led_max_brightness"))
         cfg.led_max_brightness = json["led_max_brightness"];
     if (json.containsKey("status_interval"))
-        cfg.status_interval = json["status_interval"];
+        cfg.status_interval = (int)json["status_interval"]*1000;
     if (json.containsKey("command_interval"))
-        cfg.command_interval = json["command_interval"];
+        cfg.command_interval =(int) json["command_interval"]*1000;
     if (json.containsKey("inactivity_timeout"))
-        cfg.inactivity_timeout = json["inactivity_timeout"];
+        cfg.inactivity_timeout = (int)json["inactivity_timeout"]*1000;
     if (json.containsKey("mqtt_host"))
         strncpy(cfg.mqtt_host, json["mqtt_host"], sizeof(cfg.mqtt_host));
     if (json.containsKey("atem_host"))
