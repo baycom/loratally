@@ -58,9 +58,14 @@ This project is based on ESP32 boards in two different flavours:
 - https://heltec.org/project/wifi-lora-32/ this board is intended as a tally light primarily connected via LoRa. Any number of WS2812 (NeoPixel) LEDs might be connected to PIN23 (PixelPin defined in main.h). Usually you connect two of them where the first one is RHS and the second one is LHS.
 - https://www.olimex.com/Products/IoT/ESP32/ESP32-POE-ISO/open-source-hardware this board is intended to be used as a gateway to ethernet with PoE.
 
-## Setup & Configuration
+## Web frontend & configuration
+
+The web frontend shows the tally state and some other data by default.
+![Default Page](https://github.com/baycom/loratally/raw/main/doc/web-tally.png)
 
 The initial setup is done via web browser by connecting to the WiFi network like Tally-123456 by entering the the address 192.168.4.1
+![Settings Page](https://github.com/baycom/loratally/raw/7c992fd1e20de098aaf00f8e401f0913732140b3/doc/web-setup.png)
+
 
 ## Button control
 
@@ -68,6 +73,6 @@ On all ESP32 boards there are two buttons:
 - EN/Reset: This button is being used to power the LoRa tally device on
 - GPIOX: The function of this button depends on the length it is being pressed:
   - less than 1 second: Show version, tally id, ip address and status 
-  - ~1.5s: Power off
-  - >10s: Factory reset
+  - 1.5s: Power off
+  - more than 10s: Factory reset
   
