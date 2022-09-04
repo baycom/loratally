@@ -17,11 +17,11 @@ The function principle is as follows:
   - ch1: red tally 1, ch2: green tally 1, ch3: blue tally 1 
   - ch4: red tally 2, ch5: green tally 2, ch6: blue tally 2
   - ...
-- E1.31: Each tally can be adressed separately via the DMX universe field:
+- E1.31: Each tally can be addressed separately via the DMX universe field:
   - universe 1: ch1: red tally 1, ch2: green tally 1, ch3: blue tally 1
   - universe 2: ch1: red tally 2, ch2: green tally 2, ch3: blue tally 2
   - ...
-- MQTT: If a MQTT host is configured each system subscribes to a path like tally/control/<tally id> and waits for a JSON object with these values:
+- MQTT: If a MQTT host is configured each system subscribes to a topic like tally/control/<tally id> (tally_id is always the one configured on the network connected device) and waits for a JSON object with these values:
   ```
   {
     "addr": 1,
@@ -38,9 +38,22 @@ The function principle is as follows:
     "b": 0
   } 
   ```
-
+- MQTT: Status feedback of all LoRa nodes is reported back via MQTT topic tally/status/<tally id> (tally_id is always the one configured on the network connected device)
+  ```
+  {
+    "address": 1,
+    "uptime": 6340,
+    "version": 3,
+    "voltage": 3465,
+    "msgCount": 120,
+    "MAC": "65:43:21:12:34:56",
+    "RSSI": 42
+  } 
+  ```
+  
 This project is based on ESP32 boards in two different flavours:
 
 - https://heltec.org/project/wifi-lora-32/ this board is intended as a tally light primarily connected via LoRa. Any number of WS2812 (NeoPixel) LEDs might be connected to PIN23 (PixelPin defined in main.h). Usually you connect two of them where the first one is RHS and the second one is LHS.
 - https://www.olimex.com/Products/IoT/ESP32/ESP32-POE-ISO/open-source-hardware this board is intended to be used as a gateway to ethernet with PoE.
 
+The initial setup is done via web browser by connecting to the WiFi network like Tally-123456 by entering the the address 192.168.4.1
