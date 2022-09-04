@@ -175,7 +175,7 @@ void tally_loop() {
         }
     }
 
-    if ((millis() - tallyLast > cfg.tally_timeout) && !tallyCleared) {
+    if (cfg.tally_timeout > 1000 && (millis() - tallyLast > cfg.tally_timeout) && !tallyCleared) {
         setTallyLight(0, 0, 0, DISP_OFF);
         tallyCleared = true;
     }

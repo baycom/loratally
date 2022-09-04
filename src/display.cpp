@@ -19,7 +19,7 @@ void d() {
 
 void display_loop() {
 #ifdef HELTEC
-    if ((millis() - displayTime > cfg.display_timeout) && !displayCleared) {
+    if (cfg.display_timeout > 1000 && (millis() - displayTime > cfg.display_timeout) && !displayCleared) {
         displayCleared = millis();
         display.clear();
         display.display();

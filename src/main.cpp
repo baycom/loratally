@@ -192,10 +192,12 @@ void setup() {
                 d();
             } else {
                 WiFi.disconnect();
+                uint8_t mac[10];
+                WiFi.macAddress(mac);
+                sprintf(cfg.wifi_ssid, "Tally-%02X%02X%02X", mac[3], mac[4], mac[5]);
                 warn(
                     "\nFailed to connect to SSID %s falling back to AP mode\n",
                     cfg.wifi_ssid);
-                strcpy(cfg.wifi_ssid, "RPS");
                 cfg.wifi_secret[0] = 0;
             }
         }
@@ -270,7 +272,7 @@ void loop() {
         WiFi.status() == WL_CONNECTED) {
         updater->CheckAndUpdate();
     }
-    if (cfg.inactivity_timeout && tallyLast &&
+    if (cfg.inactivity_timeout>30000 && tallyLast &&
         (millis() - tallyLast) > cfg.inactivity_timeout) {
         power_off(3);
     }

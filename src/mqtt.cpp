@@ -26,23 +26,37 @@ void mqttCallback(char *topic, byte *payload, unsigned int length) {
     Serial.println();
 #endif
     if (!error) {
-        if (json.containsKey("r")) r = json["r"];
-        if (json.containsKey("g")) g = json["g"];
-        if (json.containsKey("b")) b = json["b"];
+        int rgbok = 0;
+        if (json.containsKey("r")) {
+            r = json["r"];
+            rgbok++;
+        }
+        if (json.containsKey("g")) {
+            g = json["g"];
+            rgbok++;
+        }
+        if (json.containsKey("b")) {
+            b = json["b"];
+            rgbok++;
+        }
         if (json.containsKey("addr")) addr = json["addr"];
         if (json.containsKey("state")) state = json["state"];
         if (json.containsKey("brightness")) brightness = json["brightness"];
-        if (json.containsKey("text")) strncpy(text, json["text"], sizeof(text)-1);
-        if (state != -1) {
-            if(setTallyState(addr, state, brightness, text)) {
-                LoRaBCTS();
+        if (json.containsKey("text"))
+            strncpy(text, json["text"], sizeof(text) - 1);
+        if (addr) {
+            if (state != -1) {
+                if (setTallyState(addr, state, brightness, text)) {
+                    LoRaBCTS();
+                }
+            }
+            if (rgbok == 3) {
+                if (addr == cfg.tally_id) {
+                    setTallyLight(r, g, b);
+                }
+                LoRaSend(addr, r, g, b);
             }
         }
-        if (addr == cfg.tally_id) {
-            rgbFromTSL(r, g, b, state, 3);
-            setTallyLight(r, g, b);
-        }
-        LoRaSend(addr, r, g, b);
     }
 }
 
@@ -59,7 +73,7 @@ boolean mqtt_setup() {
             String topic = "tally/control/" + String(cfg.tally_id);
             boolean ret = mqttClient.subscribe(topic.c_str());
             dbg("CId: %s subscribe: %s -> %d conn: %d\n", client_id.c_str(),
-                   topic.c_str(), ret, mqttClient.connected());
+                topic.c_str(), ret, mqttClient.connected());
             return true;
         }
     }
@@ -82,4 +96,3 @@ void mqtt_loop() {
         mqttClient.loop();
     }
 }
-

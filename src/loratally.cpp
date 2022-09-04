@@ -248,6 +248,7 @@ void lora_loop() {
                         dbg("RSSI     : %d\n\n", t.s.rssi);
 
                         json["version"] = CMD_VERSION;
+                        json["uptime"] = millis()/1000;
                         json["address"] = t.s.addr;
                         json["voltage"] = t.s.voltage;
                         json["msgCount"] = t.s.msgcnt;

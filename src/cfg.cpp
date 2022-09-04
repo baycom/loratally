@@ -2,71 +2,71 @@
 
 settings_t cfg;
 
-void write_config(void)
-{
-  EEPROM.writeBytes(0, &cfg, sizeof(cfg));
-  EEPROM.commit();
+void write_config(void) {
+    EEPROM.writeBytes(0, &cfg, sizeof(cfg));
+    EEPROM.commit();
 }
 
-void read_config(void)
-{
-  EEPROM.readBytes(0, &cfg, sizeof(cfg));
-  if (cfg.version != cfg_ver_num) {
-    if (cfg.version == 0xff) {
-      strcpy(cfg.wifi_ssid, "Tally");
-      strcpy(cfg.wifi_secret, "");
-      strcpy(cfg.wifi_hostname, "Tally");
-      cfg.wifi_opmode = OPMODE_WIFI_ACCESSPOINT;
-      cfg.wifi_powersave = true;
-      cfg.tx_frequency = BAND;
-      cfg.wifi_ap_fallback = 0;
-      cfg.tx_power = 20;
-      cfg.sf = 7;
-      cfg.bandwidth = 125E3;
-      cfg.syncword = 0x34;
-      cfg.tally_id = -1;
-      cfg.num_pixels = 1;
-      cfg.tally_timeout = 60000;
-      cfg.display_timeout = 5000;
-      cfg.led_max_brightness = 192;
-      cfg.status_interval = 30000;
-      cfg.command_interval = 0;
-      cfg.inactivity_timeout = 86400*1000;
-      cfg.mqtt_host[0] = 0;
-      cfg.atem_host[0] = 0;
-      cfg.tsl_port = 0;
-    }
-    if(cfg.ota_path[0] == 0xff) {
+void read_config(void) {
+    EEPROM.readBytes(0, &cfg, sizeof(cfg));
+    if (cfg.version != cfg_ver_num) {
+        if (cfg.version == 0xff) {
+            uint8_t mac[10];
+            WiFi.macAddress(mac);
+            sprintf(cfg.wifi_ssid, "Tally-%02X%02X%02X", mac[3], mac[4], mac[5]);
+            strcpy(cfg.wifi_secret, "");
+            strcpy(cfg.wifi_hostname, cfg.wifi_ssid);
+            cfg.wifi_opmode = OPMODE_WIFI_ACCESSPOINT;
+            cfg.wifi_powersave = true;
+            cfg.tx_frequency = BAND;
+            cfg.wifi_ap_fallback = 0;
+            cfg.tx_power = 20;
+            cfg.sf = 7;
+            cfg.bandwidth = 125E3;
+            cfg.syncword = 0x34;
+            cfg.tally_id = -1;
+            cfg.num_pixels = 1;
+            cfg.tally_timeout = 60000;
+            cfg.display_timeout = 5000;
+            cfg.led_max_brightness = 192;
+            cfg.status_interval = 30000;
+            cfg.command_interval = 0;
+            cfg.inactivity_timeout = 86400 * 1000;
+            cfg.mqtt_host[0] = 0;
+            cfg.atem_host[0] = 0;
+            cfg.tsl_port = 0;
+        }
+        if (cfg.ota_path[0] == 0xff) {
             cfg.ota_path[0] = 0;
+        }
+        cfg.version = cfg_ver_num;
+        write_config();
     }
-    cfg.version = cfg_ver_num;
-    write_config();
-  }
-  info("Settings:\n");
-  info("cfg version     : %d\n", cfg.version);
-  info("ssid            : %s\n", cfg.wifi_ssid);
-  info("wifi_secret     : %s\n", cfg.wifi_secret);
-  info("wifi_hostname   : %s\n", cfg.wifi_hostname);
-  info("wifi_opmode     : %d\n", cfg.wifi_opmode);
-  info("wifi_powersave  : %d\n", cfg.wifi_powersave);
-  info("wifi_ap_fallback: %d\n", cfg.wifi_ap_fallback);
-  info("ota_path        : %s\n", cfg.ota_path);
-  info("tx_frequency    : %.6fMhz\n", cfg.tx_frequency/1E6);
-  info("bandwidth       : %.1fkHz\n", cfg.bandwidth/1E3);
-  info("tx_power        : %ddBm\n", cfg.tx_power);
-  info("spreading factor: %d\n", cfg.sf);
-  info("syncword        : %d\n", cfg.syncword);
-  info("tally_id        : %d\n", cfg.tally_id);
-  info("num_pixel       : %d\n", cfg.num_pixels);
-  info("tally_timeout   : %ldms\n", cfg.tally_timeout);
-  info("display_timeout : %ldms\n", cfg.display_timeout);
-  info("led_max_brightness: %d\n", cfg.led_max_brightness);
-  info("inactivity_timeout: %ldms\n", cfg.inactivity_timeout);
-  info("status_interval : %ldms\n", cfg.status_interval);
-  info("command_interval: %ldms\n", cfg.command_interval);
-  info("MQTT Host       : %s\n", cfg.mqtt_host);
-  info("ATEM Host       : %s\n", cfg.atem_host);
-  info("TSL Port        : %d\n", cfg.tsl_port);
+    info("Settings:\n");
+    info("cfg version     : %d\n", cfg.version);
+    info("ssid            : %s\n", cfg.wifi_ssid);
+    info("wifi_secret     : %s\n", cfg.wifi_secret);
+    info("wifi_hostname   : %s\n", cfg.wifi_hostname);
+    info("wifi_opmode     : %d\n", cfg.wifi_opmode);
+    info("wifi_powersave  : %d\n", cfg.wifi_powersave);
+    info("wifi_ap_fallback: %d\n", cfg.wifi_ap_fallback);
+    info("ota_path        : %s\n", cfg.ota_path);
+    info("tx_frequency    : %.6fMhz\n", cfg.tx_frequency / 1E6);
+    info("bandwidth       : %.1fkHz\n", cfg.bandwidth / 1E3);
+    info("tx_power        : %ddBm\n", cfg.tx_power);
+    info("spreading factor: %d\n", cfg.sf);
+    info("syncword        : %d\n", cfg.syncword);
+    info("tally_id        : %d\n", cfg.tally_id);
+    info("num_pixel       : %d\n", cfg.num_pixels);
+    info("tally_timeout   : %ldms\n", cfg.tally_timeout);
+    info("display_timeout : %ldms\n", cfg.display_timeout);
+    info("led_max_brightness: %d\n", cfg.led_max_brightness);
+    info("inactivity_timeout: %ldms\n", cfg.inactivity_timeout);
+    info("status_interval : %ldms\n", cfg.status_interval);
+    info("command_interval: %ldms\n", cfg.command_interval);
+    info("MQTT Host       : %s\n", cfg.mqtt_host);
+    info("ATEM Host       : %s\n", cfg.atem_host);
+    info("TSL Port        : %d\n", cfg.tsl_port);
 }
 
 String get_settings(void) {
