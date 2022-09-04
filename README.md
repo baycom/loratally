@@ -1,4 +1,4 @@
-# loratally
+# LoRa Tally
 A tally system compatible with TSL UMD V5, ATEM, E1.31, MQTT &amp; LoRa
 
 The basic function principle of this system is providing a bidirectional relay between an IP based communication and the wireless LoRa standard. Every node in the system can be both: connected to WiFi and/or LoRa. These protocols are supported:
@@ -9,7 +9,7 @@ The basic function principle of this system is providing a bidirectional relay b
 - MQTT: Protocol used in IoT applications
 - LoRa: Proprietary protocol for up to 64 tally lights
 
-The function principle is as follows:
+## Function principle 
 
 - TSL UMD V5: If a TSL port is configured tally states (off, PGM, PVW, REC) and brightness of up to 32 channels with different RH / LH light states are forwareded via LoRa. Text messages are only displayed on the ip connected system.
 - ATEM: If a ATEM host is configured tally states (off, PGW, PVW) of up to 32 channels received via network are forwarded via LoRa.
@@ -51,9 +51,23 @@ The function principle is as follows:
   } 
   ```
   
+## Supported hardware
+
 This project is based on ESP32 boards in two different flavours:
 
 - https://heltec.org/project/wifi-lora-32/ this board is intended as a tally light primarily connected via LoRa. Any number of WS2812 (NeoPixel) LEDs might be connected to PIN23 (PixelPin defined in main.h). Usually you connect two of them where the first one is RHS and the second one is LHS.
 - https://www.olimex.com/Products/IoT/ESP32/ESP32-POE-ISO/open-source-hardware this board is intended to be used as a gateway to ethernet with PoE.
 
+## Setup & Configuration
+
 The initial setup is done via web browser by connecting to the WiFi network like Tally-123456 by entering the the address 192.168.4.1
+
+## Button control
+
+On all ESP32 boards there are two buttons:
+- EN/Reset: This button is being used to power the LoRa tally device on
+- GPIOX: The function of this button depends on the length it is being pressed:
+  - less than 1 second: Show version, tally id, ip address and status 
+  - ~1.5s: Power off
+  - >10s: Factory reset
+  
