@@ -9,7 +9,7 @@ The basic function principle of this system is providing a bidirectional relay b
 - MQTT: Protocol used in IoT applications
 - LoRa: Proprietary protocol for up to 64 tally lights
 
-## Function principle 
+## Supported Protocols
 
 - TSL UMD V5: If a TSL port is configured tally states (off, PGM, PVW, REC) and brightness of up to 32 channels with different RH / LH light states are forwareded via LoRa. Text messages are only displayed on the ip connected system.
 - ATEM: If a ATEM host is configured tally states (off, PGW, PVW) of up to 32 channels received via network are forwarded via LoRa.
@@ -51,7 +51,7 @@ The basic function principle of this system is providing a bidirectional relay b
   } 
   ```
   
-## Supported hardware
+## Supported Hardware
 
 This project is based on ESP32 boards in two different flavours:
 
@@ -64,7 +64,7 @@ This project is based on ESP32 boards in two different flavours:
 ![Tally Device 4](https://github.com/baycom/loratally/raw/main/doc/tally-device4.jpg)
 ![Tally Device 5](https://github.com/baycom/loratally/raw/main/doc/tally-device5.jpg)
 
-## Web frontend & configuration
+## Web Frontend & Configuration
 
 The web frontend shows the tally state and some other data by default.
 ![Default Page](https://github.com/baycom/loratally/raw/main/doc/web-tally.png)
@@ -73,7 +73,7 @@ The initial setup is done via web browser by connecting to the WiFi network like
 ![Settings Page](https://github.com/baycom/loratally/raw/7c992fd1e20de098aaf00f8e401f0913732140b3/doc/web-setup.png)
 
 
-## Button control
+## Button Control
 
 On all ESP32 boards there are two buttons:
 - EN/Reset: This button is being used to power the LoRa tally device on
