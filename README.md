@@ -1,19 +1,13 @@
 # LoRa Tally
 A tally system compatible with TSL UMD V5, ATEM, E1.31, MQTT &amp; LoRa
 
-The basic function principle of this system is providing a bidirectional relay between an IP based communication and the wireless LoRa standard. Every node in the system can be both: connected to WiFi and/or LoRa. These protocols are supported:
-
-- TSL UMD V5: Standard tally protocol via TCP with support of four different states (off, PGM, PVW, REC), four brightness levels and two lights (left / right)
-- ATEM: Tally protocol by Blackmagic Design 
-- E1.31: DMX via IP, RGB based
-- MQTT: Protocol used in IoT applications
-- LoRa: Proprietary protocol for up to 64 tally lights
+The basic function principle of this system is providing a bidirectional relay between an IP based communication and the wireless LoRa standard. Every node in the system can be both: connected to IP network via Ethernet or WiFi and/or LoRa. The proprietary protocol is capable of controlling up to 32 tally lights, each with two LEDS (RHS/LHS).
 
 ## Supported Protocols
 
-- TSL UMD V5: If a TSL port is configured tally states (off, PGM, PVW, REC) and brightness of up to 32 channels with different RH / LH light states are forwareded via LoRa. Text messages are only displayed on the ip connected system.
-- ATEM: If a ATEM host is configured tally states (off, PGW, PVW) of up to 32 channels received via network are forwarded via LoRa.
-- E1.31: Each tally light is addressed via its DMX channel. Every 3 channels make one tally: 
+- TSL UMD V5: If a TSL UMD TCP port is configured tally states (off, PGM, PVW, REC) and brightness of up to 32 channels with different RH / LH light states are forwareded via LoRa. Text messages are only displayed on the ip connected system.
+- ATEM (Tally protocol by Blackmagic Design): If a ATEM host is configured tally states (off, PGW, PVW) of up to 32 channels received via network are forwarded via LoRa.
+- E1.31 (DMX via IP): Each tally light is addressed via its DMX channel. Every 3 channels make one tally: 
   - ch1: red tally 1, ch2: green tally 1, ch3: blue tally 1 
   - ch4: red tally 2, ch5: green tally 2, ch6: blue tally 2
   - ...
