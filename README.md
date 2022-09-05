@@ -1,7 +1,7 @@
 # LoRa Tally
 A tally system compatible with TSL UMD V5, ATEM, E1.31, MQTT &amp; LoRa
 
-The basic function principle of this system is providing a bidirectional relay between an IP based communication and the wireless LoRa standard. Every node in the system can be both: connected to IP network via Ethernet or WiFi and/or LoRa. The proprietary protocol is capable of controlling up to 32 tally lights, each with two LEDS (RHS/LHS).
+The basic operation mode of this system is providing a bidirectional relay between an IP based communication and the wireless LoRa standard. Every node in the system can be both: connected to an IP network via Ethernet or WiFi and/or LoRa. The proprietary protocol is capable of controlling up to 32 tally lights, each with two seperately addressable LEDS (RHS/LHS via TSL UMD).
 
 ## Supported Protocols
 
