@@ -60,10 +60,12 @@ This project is based on ESP32 boards in two different flavours:
 
 ## Web Frontend & Configuration
 
-The web frontend shows the tally state and some other data by default.
+The web frontend shows the tally state and some other data by default:
+
 ![Default Page](https://github.com/baycom/loratally/raw/main/doc/web-tally.png)
 
-The initial setup is done via web browser by connecting to the WiFi network like Tally-123456 by entering the the address 192.168.4.1
+The initial setup is done via web browser by connecting to the WiFi network like Tally-123456 by entering the address 192.168.4.1
+
 ![Settings Page](https://github.com/baycom/loratally/raw/7c992fd1e20de098aaf00f8e401f0913732140b3/doc/web-setup.png)
 
 
