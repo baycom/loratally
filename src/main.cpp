@@ -2,12 +2,6 @@
 
 bool eth_connected = false;
 
-#ifdef HELTEC
-bool heltec = true;
-#else
-bool heltec = false;
-#endif
-
 static unsigned long lastReconnect = 0;
 
 static EOTAUpdate *updater;
@@ -93,7 +87,7 @@ void WiFiEvent(WiFiEvent_t event) {
 }
 
 void setup() {
-    randomSeed(analogRead(5));
+    randomSeed(analogRead(GPIO_BATTERY));
     Serial.begin(115200);
     info("Version: %s-%s-%s, Version Number: %d, CFG Number: %d\n",
            VERSION_STR, PLATFORM_STR, BUILD_STR, VERSION_NUMBER, cfg_ver_num);
@@ -105,25 +99,21 @@ void setup() {
     WiFi.onEvent(WiFiEvent);
     buttons_setup();
 
-#ifdef HELTEC
     pinMode(Vext, OUTPUT);
     digitalWrite(Vext, LOW);
     delay(50);
 
     localtally_setup();
 
-    pinMode(OLED_RST, OUTPUT);
-    digitalWrite(OLED_RST, LOW);  // low to reset OLED
-    delay(50);
-    digitalWrite(OLED_RST, HIGH);  // must be high to turn on OLED
-#endif
     display_setup();
+
+    lora_setup();
 
     setTallyLight(32, 0, 0, DISP_OFF);
 
     //  esp_sleep_enable_ext1_wakeup(BUTTON_PIN_BITMASK,ESP_EXT1_WAKEUP_ALL_LOW);
     print_wakeup_reason();
-#ifdef HELTEC
+#ifdef DISPLAY
     display.setTextAlignment(TEXT_ALIGN_CENTER);
     display.setFont(ArialMT_Plain_10);
     display.clear();
@@ -145,12 +135,10 @@ void setup() {
     display.drawString(64, 34, "SSID: " + String(cfg.wifi_ssid));
     display.drawString(64, 44, "NAME: " + String(cfg.wifi_hostname));
     d();
-    setTallyLight(0, 32, 0, DISP_OFF);
 #endif
+    setTallyLight(0, 32, 0, DISP_OFF);
 
     updater = new EOTAUpdate(cfg.ota_path, VERSION_NUMBER);
-
-    lora_setup();
 
     if (cfg.wifi_opmode == OPMODE_ETH_CLIENT) {
         ETH.begin();

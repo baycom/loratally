@@ -14,6 +14,7 @@ static char tallyText[100];
 
 void localtally_setup() {
     memset(tallyState, 0, sizeof(tallyState));
+    pinMode(PixelPin, OUTPUT);
     strip.Begin();
 }
 
@@ -112,11 +113,10 @@ void setTallyLight(int r, int g, int b, dispMode_t disp, int pixel,
         tallyCleared = false;
     }
 
-#ifdef HELTEC
     r = r * cfg.led_max_brightness / 255;
     g = g * cfg.led_max_brightness / 255;
     b = b * cfg.led_max_brightness / 255;
-
+    
     if (pixel == 0) {
         for (int i = 0; i < cfg.num_pixels; i++) {
             strip.SetPixelColor(i, RgbColor(r, g, b));
@@ -125,6 +125,7 @@ void setTallyLight(int r, int g, int b, dispMode_t disp, int pixel,
         if (pixel <= cfg.num_pixels)
             strip.SetPixelColor(pixel - 1, RgbColor(r, g, b));
     }
+#ifdef DISPLAY
     strip.Show();
     if (disp > DISP_OFF) {
         if (text != NULL && strlen(text)) {

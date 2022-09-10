@@ -56,7 +56,8 @@ int LoRaSend(uint8_t addr, uint8_t r, uint8_t g, uint8_t b, bool disp) {
     t.t.g = g;
     t.t.b = b;
     t.dw.crc32 = CRC32::calculate(t.b8, sizeof(tallyCMD_t) - sizeof(uint32_t));
-    if (disp && heltec) {
+#ifdef DISPLAY    
+    if (disp) {
         display.clear();
         display.setTextAlignment(TEXT_ALIGN_CENTER);
         display.setFont(ArialMT_Plain_10);
@@ -66,6 +67,7 @@ int LoRaSend(uint8_t addr, uint8_t r, uint8_t g, uint8_t b, bool disp) {
         display.drawString(64, 34, "Blue : " + String(t.t.b));
         d();
     }
+#endif    
     dbg("crc32: %08x\n", t.dw.crc32);
     dbg("E1.31 -> Lora: ");
     #ifdef DEBUG
@@ -149,15 +151,15 @@ int LoRaBCRGB(uint8_t *property_values, int numChannels, bool disp) {
         t.b.rgb[i] = y << 6 | g << 4 | b << 2 | r;
     }
     t.dw.crc32 = CRC32::calculate(t.b8, sizeof(tallyCMD_t) - sizeof(uint32_t));
-
-    if (disp && heltec) {
+#ifdef DISPLAY
+    if (disp) {
         display.clear();
         display.setTextAlignment(TEXT_ALIGN_CENTER);
         display.setFont(ArialMT_Plain_10);
         display.drawString(64, 4, "Addr : " + String(t.t.addr));
         d();
     }
-
+#endif
     dbg("crc32: %08x\n", t.dw.crc32);
     dbg("E1.31 -> Lora: ");
     for (int i = 0; i < sizeof(t); i++) {

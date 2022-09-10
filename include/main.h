@@ -43,6 +43,7 @@
 #define BATTVOLT() (analogReadMilliVolts(GPIO_BATTERY)*(100.0+220.0)/100.0)
 
 #ifdef HELTEC
+    #define DISPLAY
     #define OLED_ADDRESS 0x3c
     #define OLED_SDA 4  
     #define OLED_SCL 15 
@@ -58,12 +59,13 @@
     #define LoRa_CS   18 //SS   // GPIO 18
     #define LoRa_DIO0 26 //DIO0 // GPIO 26
     #define Vext      21
-    #define PixelPin  23  // make sure to set this to the correct pin, ignored for Esp8266
-#else
+    #define PixelPin  23 // make sure to set this to the correct pin, ignored for Esp8266
+#endif
+#ifdef OLIMEX_POE_ISO 
     #define OLED_ADDRESS 0x3c
-    #define OLED_SDA 15
-    #define OLED_SCL 15 
-    #define OLED_RST 15 
+    #define OLED_SDA 36
+    #define OLED_SCL 36 
+    #define OLED_RST 36 
 
     #define GPIO_BUTTON GPIO_NUM_34
     #define GPIO_BATTERY GPIO_NUM_35
@@ -74,8 +76,26 @@
     #define LoRa_RST  14  
     #define LoRa_CS    2  
     #define LoRa_DIO0  5 
-    #define Vext      21
-    #define PixelPin  23  // make sure to set this to the correct pin, ignored for Esp8266
+    #define Vext      12
+    #define PixelPin  23  
+#endif
+#ifdef OLIMEX_POE
+    #define OLED_ADDRESS 0x3c
+    #define OLED_SDA 36
+    #define OLED_SCL 36
+    #define OLED_RST 36
+
+    #define GPIO_BUTTON GPIO_NUM_34
+    #define GPIO_BATTERY GPIO_NUM_35
+
+    #define LoRa_SCK  13
+    #define LoRa_MISO  4
+    #define LoRa_MOSI 16
+    #define LoRa_RST  14
+    #define LoRa_CS    2
+    #define LoRa_DIO0 36
+    #define Vext      12
+    #define PixelPin  5
 #endif
 
 #define BUTTON_PIN_BITMASK (1LL<<GPIO_BUTTON)
