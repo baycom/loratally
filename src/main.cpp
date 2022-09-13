@@ -113,7 +113,7 @@ void setup() {
 
     //  esp_sleep_enable_ext1_wakeup(BUTTON_PIN_BITMASK,ESP_EXT1_WAKEUP_ALL_LOW);
     print_wakeup_reason();
-#ifdef DISPLAY
+#ifdef HAS_DISPLAY
     display.setTextAlignment(TEXT_ALIGN_CENTER);
     display.setFont(ArialMT_Plain_10);
     display.clear();
@@ -237,6 +237,7 @@ void power_off(int state) {
     if (state & 2) {
         setTallyLight(0, 0, 32, DISP_OFF);
         sleep(2);
+        setTallyLight(0, 0, 0, DISP_OFF);
         display.clear();
         digitalWrite(OLED_RST, LOW);  // low to reset OLED
         digitalWrite(Vext, HIGH);

@@ -1,5 +1,5 @@
-#ifndef DISPLAY_H
-#define DISPLAY_H
+#ifndef HAS_DISPLAY_H
+#define HAS_DISPLAY_H
 #include <SSD1306Wire.h>
 
 extern SSD1306Wire display;

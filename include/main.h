@@ -43,7 +43,8 @@
 #define BATTVOLT() (analogReadMilliVolts(GPIO_BATTERY)*(100.0+220.0)/100.0)
 
 #ifdef HELTEC
-    #define DISPLAY
+    #define HAS_DISPLAY
+    #define HAS_PIXEL
     #define OLED_ADDRESS 0x3c
     #define OLED_SDA 4  
     #define OLED_SCL 15 
@@ -80,6 +81,7 @@
     #define PixelPin  23  
 #endif
 #ifdef OLIMEX_POE
+    #define HAS_PIXEL
     #define OLED_ADDRESS 0x3c
     #define OLED_SDA 36
     #define OLED_SCL 36

@@ -14,8 +14,10 @@ static char tallyText[100];
 
 void localtally_setup() {
     memset(tallyState, 0, sizeof(tallyState));
+#ifdef HAS_PIXEL
     pinMode(PixelPin, OUTPUT);
     strip.Begin();
+#endif
 }
 
 void sendStatus(void) {
@@ -116,7 +118,7 @@ void setTallyLight(int r, int g, int b, dispMode_t disp, int pixel,
     r = r * cfg.led_max_brightness / 255;
     g = g * cfg.led_max_brightness / 255;
     b = b * cfg.led_max_brightness / 255;
-    
+#ifdef HAS_PIXEL
     if (pixel == 0) {
         for (int i = 0; i < cfg.num_pixels; i++) {
             strip.SetPixelColor(i, RgbColor(r, g, b));
@@ -125,8 +127,9 @@ void setTallyLight(int r, int g, int b, dispMode_t disp, int pixel,
         if (pixel <= cfg.num_pixels)
             strip.SetPixelColor(pixel - 1, RgbColor(r, g, b));
     }
-#ifdef DISPLAY
     strip.Show();
+#endif    
+#ifdef HAS_DISPLAY
     if (disp > DISP_OFF) {
         if (text != NULL && strlen(text)) {
             display.clear();

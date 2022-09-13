@@ -15,7 +15,7 @@ void display_setup() {
 }
 
 void d() {
-#ifdef DISPLAY
+#ifdef HAS_DISPLAY
     displayTime = millis();
     displayCleared = 0;
     display.display();
@@ -23,7 +23,7 @@ void d() {
 }
 
 void display_loop() {
-#ifdef DISPLAY
+#ifdef HAS_DISPLAY
     if (cfg.display_timeout > 1000 && (millis() - displayTime > cfg.display_timeout) && !displayCleared) {
         displayCleared = millis();
         display.clear();

@@ -56,7 +56,7 @@ int LoRaSend(uint8_t addr, uint8_t r, uint8_t g, uint8_t b, bool disp) {
     t.t.g = g;
     t.t.b = b;
     t.dw.crc32 = CRC32::calculate(t.b8, sizeof(tallyCMD_t) - sizeof(uint32_t));
-#ifdef DISPLAY    
+#ifdef HAS_DISPLAY    
     if (disp) {
         display.clear();
         display.setTextAlignment(TEXT_ALIGN_CENTER);
@@ -151,7 +151,7 @@ int LoRaBCRGB(uint8_t *property_values, int numChannels, bool disp) {
         t.b.rgb[i] = y << 6 | g << 4 | b << 2 | r;
     }
     t.dw.crc32 = CRC32::calculate(t.b8, sizeof(tallyCMD_t) - sizeof(uint32_t));
-#ifdef DISPLAY
+#ifdef HAS_DISPLAY
     if (disp) {
         display.clear();
         display.setTextAlignment(TEXT_ALIGN_CENTER);
