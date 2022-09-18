@@ -2,9 +2,12 @@
 
 bool eth_connected = false;
 
-static unsigned long lastReconnect = 0;
-
 static EOTAUpdate *updater;
+
+static IPAddress myIP;
+static IPAddress myGW;
+static IPAddress myNM;
+static IPAddress myDNS;
 
 static void print_wakeup_reason() {
     esp_sleep_wakeup_cause_t wakeup_reason;
@@ -73,6 +76,7 @@ void WiFiEvent(WiFiEvent_t event) {
                 eth_connected = true;
             }
             break;
+        case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
         case ARDUINO_EVENT_ETH_DISCONNECTED:
             Serial.println("ETH Disconnected");
             eth_connected = false;
@@ -145,10 +149,17 @@ void setup() {
     } else {
         if (cfg.wifi_opmode == OPMODE_WIFI_STATION) {
             WiFi.disconnect();
+            WiFi.setAutoReconnect(true);
             WiFi.setHostname(cfg.wifi_hostname);
             WiFi.setSleep(cfg.wifi_powersave);
             WiFi.mode(WIFI_STA);
-            WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
+
+            myIP.fromString(cfg.ip_addr);
+            myGW.fromString(cfg.ip_gw);
+            myNM.fromString(cfg.ip_netmask);
+            myDNS.fromString(cfg.ip_dns);
+
+            WiFi.config(myIP, myGW, myNM, myDNS);
             WiFi.begin(cfg.wifi_ssid, cfg.wifi_secret);
 
             info("\n");
@@ -214,18 +225,6 @@ void setup() {
     setTallyLight(0, 0, 0, DISP_OFF);
 }
 
-static void wifi_loop() {
-    if (WiFi.getMode() == WIFI_MODE_STA && WiFi.status() == WL_DISCONNECTED) {
-        if (millis() - lastReconnect > 5000) {
-            warn("lost WIFI connecion - trying to reconnect\n");
-            WiFi.reconnect();
-            WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
-            WiFi.setHostname(cfg.wifi_hostname);
-            lastReconnect = millis();
-        }
-    }
-}
-
 void power_off(int state) {
     if (state & 1) {
         display.clear();
@@ -247,7 +246,6 @@ void power_off(int state) {
 }
 
 void loop() {
-    wifi_loop();
     display_loop();
     buttons_loop();
     lora_loop();

@@ -18,6 +18,11 @@ typedef struct {
   char ota_path[256];
   int wifi_ap_fallback;
 
+  char ip_addr[16];
+  char ip_gw[16];
+  char ip_netmask[16];
+  char ip_dns[16];
+
   long tx_frequency; 
   long bandwidth;
   int sf;

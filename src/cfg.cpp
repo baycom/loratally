@@ -18,6 +18,10 @@ void read_config(void) {
             strcpy(cfg.wifi_hostname, cfg.wifi_ssid);
             cfg.wifi_opmode = OPMODE_WIFI_ACCESSPOINT;
             cfg.wifi_powersave = true;
+            cfg.ip_addr[0] = 0;
+            cfg.ip_gw[0] = 0;
+            cfg.ip_netmask[0] = 0;
+            cfg.ip_dns[0] = 0;
             cfg.tx_frequency = BAND;
             cfg.wifi_ap_fallback = 0;
             cfg.tx_power = 20;
@@ -50,6 +54,10 @@ void read_config(void) {
     info("wifi_opmode     : %d\n", cfg.wifi_opmode);
     info("wifi_powersave  : %d\n", cfg.wifi_powersave);
     info("wifi_ap_fallback: %d\n", cfg.wifi_ap_fallback);
+    info("ip_addr         : %s\n", cfg.ip_addr);
+    info("ip_gw           : %s\n", cfg.ip_gw);
+    info("ip_netmask      : %s\n", cfg.ip_netmask);
+    info("ip_dns          : %s\n", cfg.ip_dns);
     info("ota_path        : %s\n", cfg.ota_path);
     info("tx_frequency    : %.6fMhz\n", cfg.tx_frequency / 1E6);
     info("bandwidth       : %.1fkHz\n", cfg.bandwidth / 1E3);
@@ -78,6 +86,10 @@ String get_settings(void) {
     json["wifi_ap_fallback"] = cfg.wifi_ap_fallback;
     json["wifi_powersave"] = cfg.wifi_powersave;
     json["wifi_secret"] = cfg.wifi_secret;
+    json["ip_addr"] = cfg.ip_addr;
+    json["ip_gw"] = cfg.ip_gw;
+    json["ip_netmask"] = cfg.ip_netmask;
+    json["ip_dns"] = cfg.ip_dns;
     json["ota_path"] = cfg.ota_path;
     json["tx_frequency"] = cfg.tx_frequency;
     json["sf"] = cfg.sf;
@@ -114,6 +126,14 @@ boolean parse_settings(DynamicJsonDocument json) {
         cfg.wifi_ap_fallback = json["wifi_ap_fallback"];
     if (json.containsKey("wifi_secret"))
         strcpy(cfg.wifi_secret, json["wifi_secret"]);
+    if (json.containsKey("ip_addr"))
+        strcpy(cfg.ip_addr, json["ip_addr"]);
+    if (json.containsKey("ip_gw"))
+        strcpy(cfg.ip_gw, json["ip_gw"]);
+    if (json.containsKey("ip_netmask"))
+        strcpy(cfg.ip_netmask, json["ip_netmask"]);
+    if (json.containsKey("ip_dns"))
+        strcpy(cfg.ip_dns, json["ip_dns"]);
     if (json.containsKey("tx_frequency"))
         cfg.tx_frequency = json["tx_frequency"];
     if (json.containsKey("bandwidth")) cfg.bandwidth = json["bandwidth"];
