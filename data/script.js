@@ -26,7 +26,11 @@ function formToJSON()
   object["wifi_hostname"]     = formData.get("wifi_hostname");
   object["wifi_powersave"]    = parseInt(formData.get("wifi_powersave"));
   object["wifi_ap_fallback"]  = parseInt(formData.get("wifi_ap_fallback"));
-  
+  object["ip_addr"]           = formData.get("ip_addr");
+  object["ip_gw"]             = formData.get("ip_gw");
+  object["ip_netmask"]        = formData.get("ip_netmask");
+  object["ip_dns"]            = formData.get("ip_dns");
+
   object["tx_frequency"]      = parseInt(formData.get("tx_frequency"));
   object["sf"]                = parseInt(formData.get("sf"));
   object["bandwidth"]         = parseInt(formData.get("bandwidth"));
@@ -70,6 +74,11 @@ function JSONToForm(form, json)
     case 1: document.getElementById("wifi_ap_fallback_on").checked=true; break;
     case 2: document.getElementById("wifi_keep_sta").checked=true; break;
   }
+  document.getElementsByName("ip_addr")[0].value=json.ip_addr;
+  document.getElementsByName("ip_gw")[0].value=json.ip_gw;
+  document.getElementsByName("ip_netmask")[0].value=json.ip_netmask;
+  document.getElementsByName("ip_dns")[0].value=json.ip_dns;
+
   document.getElementsByName("tx_frequency")[0].value=json.tx_frequency;
   document.getElementsByName("sf")[0].value=json.sf;
   document.getElementsByName("bandwidth")[0].value=json.bandwidth;

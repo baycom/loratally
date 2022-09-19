@@ -99,25 +99,20 @@ void webserver_setup() {
 
             request->send(response);
         });
-    server.on(
-        "/settings.json", HTTP_POST, [](AsyncWebServerRequest *request) {},
-        NULL,
-        [](AsyncWebServerRequest *request, uint8_t *data, size_t len,
-           size_t index, size_t total) {
-            DynamicJsonDocument json(1024);
-            DeserializationError error = deserializeJson(json, data);
-            dbg("/settings.json: post settings\n");
-            if (error || !parse_settings(json)) {
-                request->send(501, "text/plain", "deserializeJson failed");
-            } else {
-                String output = get_settings();
-                AsyncWebServerResponse *response =
-                    request->beginResponse(200, "application/json", output);
-                response->addHeader("Access-Control-Allow-Origin", "*");
-                request->send(response);
-                dbg("/settings.json: post settings done\n");
-            }
-        });
+    AsyncCallbackJsonWebHandler* handler = new AsyncCallbackJsonWebHandler("/settings.json", [](AsyncWebServerRequest *request, JsonVariant &json) {
+        if (!parse_settings(json)) {
+            err("deserializeJson failed\n");
+            request->send(501, "text/plain", "deserializeJson failed");
+        } else {
+            String output = get_settings();
+            AsyncWebServerResponse *response =
+                request->beginResponse(200, "application/json", output);
+            response->addHeader("Access-Control-Allow-Origin", "*");
+            request->send(response);
+            dbg("/settings.json: post settings done\n");
+        }
+    });
+    server.addHandler(handler);
     server.on("/reboot", [](AsyncWebServerRequest *request) {
         AsyncWebServerResponse *response =
             request->beginResponse(200, "text/plain", "OK");

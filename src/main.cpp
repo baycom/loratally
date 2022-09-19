@@ -4,11 +4,6 @@ bool eth_connected = false;
 
 static EOTAUpdate *updater;
 
-static IPAddress myIP;
-static IPAddress myGW;
-static IPAddress myNM;
-static IPAddress myDNS;
-
 static void print_wakeup_reason() {
     esp_sleep_wakeup_cause_t wakeup_reason;
 
@@ -153,6 +148,11 @@ void setup() {
             WiFi.setHostname(cfg.wifi_hostname);
             WiFi.setSleep(cfg.wifi_powersave);
             WiFi.mode(WIFI_STA);
+
+            IPAddress myIP;
+            IPAddress myGW;
+            IPAddress myNM;
+            IPAddress myDNS;
 
             myIP.fromString(cfg.ip_addr);
             myGW.fromString(cfg.ip_gw);
