@@ -43,6 +43,7 @@ typedef struct {
 
 extern settings_t cfg;
 
+void config_setup(void);
 void write_config(void);
 void read_config(void);
 String get_settings(void);

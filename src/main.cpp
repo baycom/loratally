@@ -32,8 +32,7 @@ static void print_wakeup_reason() {
     }
     if (wakeup_reason) {
         uint64_t GPIO_reason = esp_sleep_get_ext1_wakeup_status();
-        Serial.print("GPIO that triggered the wake up: GPIO ");
-        Serial.println((log(GPIO_reason)) / log(2), 0);
+        dbg("GPIO that triggered the wake up: GPIO %d\n",log(GPIO_reason) / log(2), 0);
     }
 }
 
@@ -41,26 +40,22 @@ void WiFiEvent(WiFiEvent_t event) {
     dbg("WiFiEvent: %d\n", event);
     switch (event) {
         case ARDUINO_EVENT_ETH_START:
-            Serial.println("ETH Started");
+            dbg("ETH Started\n");
             // set eth hostname here
             ETH.setHostname(cfg.wifi_hostname);
             break;
         case ARDUINO_EVENT_ETH_CONNECTED:
-            Serial.println("ETH Connected");
+            dbg("ETH Connected\n");
             break;
         case ARDUINO_EVENT_ETH_GOT_IP:
-            Serial.print("ETH MAC: ");
-            Serial.print(ETH.macAddress());
-            Serial.print(", IPv4: ");
-            Serial.print(ETH.localIP());
-            if (ETH.fullDuplex()) {
-                Serial.print(", FULL_DUPLEX");
-            }
-            Serial.print(", ");
-            Serial.print(ETH.linkSpeed());
-            Serial.println("Mbps");
+            dbg("ETH MAC: %s, IPv4: %s (%s, %dMbps)\n",ETH.macAddress(), ETH.localIP(), ETH.fullDuplex()?"FULL_DUPLEX":"HALF_DUPLEX", ETH.linkSpeed());
         case ARDUINO_EVENT_WIFI_STA_GOT_IP:
             if (!eth_connected) {
+#ifdef HAS_DISPLAY
+                display.setFont(ArialMT_Plain_10);
+                display.drawString(64, 54, "IP: " + WiFi.localIP().toString());
+                d();
+#endif
                 if (!MDNS.begin(cfg.wifi_hostname)) {
                     err("MDNS responder failed to start\n");
                 }
@@ -73,11 +68,11 @@ void WiFiEvent(WiFiEvent_t event) {
             break;
         case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
         case ARDUINO_EVENT_ETH_DISCONNECTED:
-            Serial.println("ETH Disconnected");
+            dbg("ETH Disconnected\n");
             eth_connected = false;
             break;
         case ARDUINO_EVENT_ETH_STOP:
-            Serial.println("ETH Stopped");
+            dbg("ETH Stopped\n");
             eth_connected = false;
             break;
         default:
@@ -91,8 +86,7 @@ void setup() {
     info("Version: %s-%s-%s, Version Number: %d, CFG Number: %d\n",
            VERSION_STR, PLATFORM_STR, BUILD_STR, VERSION_NUMBER, cfg_ver_num);
     info("Initializing ... ");
-
-    EEPROM.begin(EEPROM_SIZE);
+    config_setup();
     read_config();
 
     WiFi.onEvent(WiFiEvent);
@@ -103,9 +97,7 @@ void setup() {
     delay(50);
 
     localtally_setup();
-
     display_setup();
-
     lora_setup();
 
     setTallyLight(32, 0, 0, DISP_OFF);
@@ -131,7 +123,9 @@ void setup() {
             break;
     }
     display.drawString(64, 24, "Mode: " + modeStr);
-    display.drawString(64, 34, "SSID: " + String(cfg.wifi_ssid));
+    if(cfg.wifi_opmode < 2) {
+        display.drawString(64, 34, "SSID: " + String(cfg.wifi_ssid));
+    }
     display.drawString(64, 44, "NAME: " + String(cfg.wifi_hostname));
     d();
 #endif
@@ -141,84 +135,45 @@ void setup() {
 
     if (cfg.wifi_opmode == OPMODE_ETH_CLIENT) {
         ETH.begin();
-    } else {
-        if (cfg.wifi_opmode == OPMODE_WIFI_STATION) {
-            WiFi.disconnect();
-            WiFi.setAutoReconnect(true);
-            WiFi.setHostname(cfg.wifi_hostname);
-            WiFi.setSleep(cfg.wifi_powersave);
-            WiFi.mode(WIFI_STA);
+    } else if (cfg.wifi_opmode == OPMODE_WIFI_STATION) {
+        WiFi.disconnect();
+        WiFi.setAutoReconnect(true);
+        WiFi.setHostname(cfg.wifi_hostname);
+        WiFi.setSleep(cfg.wifi_powersave);
+        WiFi.mode(WIFI_STA);
 
-            IPAddress myIP;
-            IPAddress myGW;
-            IPAddress myNM;
-            IPAddress myDNS;
+        IPAddress myIP;
+        IPAddress myGW;
+        IPAddress myNM;
+        IPAddress myDNS;
 
-            myIP.fromString(cfg.ip_addr);
-            myGW.fromString(cfg.ip_gw);
-            myNM.fromString(cfg.ip_netmask);
-            myDNS.fromString(cfg.ip_dns);
+        myIP.fromString(cfg.ip_addr);
+        myGW.fromString(cfg.ip_gw);
+        myNM.fromString(cfg.ip_netmask);
+        myDNS.fromString(cfg.ip_dns);
 
-            WiFi.config(myIP, myGW, myNM, myDNS);
-            WiFi.begin(cfg.wifi_ssid, cfg.wifi_secret);
+        WiFi.config(myIP, myGW, myNM, myDNS);
+        WiFi.begin(cfg.wifi_ssid, cfg.wifi_secret);
 
-            info("\n");
-
-            unsigned long lastConnect = millis();
-            int count = 0;
-
-            while (WiFi.status() != WL_CONNECTED) {
-                delay(500);
-                setTallyLight(32 * (count & 1), 0, 32 * !(count & 1), DISP_OFF);
-                count++;
-                info("%d\n", count);
-                if (((millis() - lastConnect) > 10000) &&
-                    cfg.wifi_ap_fallback) {
-                    if (cfg.wifi_ap_fallback < 2) {
-                        cfg.wifi_opmode = OPMODE_WIFI_ACCESSPOINT;
-                    }
-                    break;
-                }
-            }
-            if (cfg.wifi_opmode == OPMODE_WIFI_STATION && count < 21) {
-                info("\n");
-                info("Connected to %s\n", cfg.wifi_ssid);
-                info("STA IP address: %s\n",
-                       WiFi.localIP().toString().c_str());
-
-                display.setFont(ArialMT_Plain_10);
-                display.drawString(64, 54, "IP: " + WiFi.localIP().toString());
-                d();
-            } else {
-                WiFi.disconnect();
-                uint8_t mac[10];
-                WiFi.macAddress(mac);
-                sprintf(cfg.wifi_ssid, "Tally-%02X%02X%02X", mac[3], mac[4], mac[5]);
-                warn(
-                    "\nFailed to connect to SSID %s falling back to AP mode\n",
-                    cfg.wifi_ssid);
-                cfg.wifi_secret[0] = 0;
+        info("\n");
+    }else if (cfg.wifi_opmode == OPMODE_WIFI_ACCESSPOINT) {
+        WiFi.softAP(cfg.wifi_ssid, cfg.wifi_secret);
+        IPAddress IP = WiFi.softAPIP();
+        info("AP IP address: %s\n", IP.toString().c_str());
+        display.setFont(ArialMT_Plain_10);
+        for (int x = 0; x < 128; x++) {
+            for (int y = 0; y < 20; y++) {
+                display.clearPixel(x, y + 24);
             }
         }
-        if (cfg.wifi_opmode == OPMODE_WIFI_ACCESSPOINT) {
-            WiFi.softAP(cfg.wifi_ssid, cfg.wifi_secret);
-            IPAddress IP = WiFi.softAPIP();
-            info("AP IP address: %s\n", IP.toString().c_str());
-            display.setFont(ArialMT_Plain_10);
-            for (int x = 0; x < 128; x++) {
-                for (int y = 0; y < 20; y++) {
-                    display.clearPixel(x, y + 24);
-                }
-            }
-            display.drawString(
-                64, 24,
-                "WIFI: " + String((cfg.wifi_opmode == OPMODE_WIFI_STATION)
-                                      ? "STA"
-                                      : "AP"));
-            display.drawString(64, 34, "SSID: " + String(cfg.wifi_ssid));
-            display.drawString(64, 54, "IP: " + IP.toString());
-            d();
-        }
+        display.drawString(
+            64, 24,
+            "WIFI: " + String((cfg.wifi_opmode == OPMODE_WIFI_STATION)
+                                    ? "STA"
+                                    : "AP"));
+        display.drawString(64, 34, "SSID: " + String(cfg.wifi_ssid));
+        display.drawString(64, 54, "IP: " + IP.toString());
+        d();
     }
     webserver_setup();
 
@@ -245,7 +200,34 @@ void power_off(int state) {
     }
 }
 
+void wifi_loop() {
+    static unsigned long last_blink = 0;
+    static int count = 0;
+
+    if(cfg.wifi_opmode == OPMODE_WIFI_STATION && cfg.wifi_ap_fallback == 1 && WiFi.status() != WL_CONNECTED && ((millis() - eth_connected) > 10000)) {
+        uint8_t mac[10];
+        WiFi.macAddress(mac);
+        sprintf(cfg.wifi_ssid, "SIP-%02X%02X%02X", mac[3], mac[4], mac[5]);
+        warn(
+            "\nFailed to connect to SSID %s falling back to AP mode\n",
+            cfg.wifi_ssid);
+        cfg.wifi_secret[0] = 0;
+        cfg.wifi_opmode = OPMODE_WIFI_ACCESSPOINT;
+        WiFi.disconnect();
+        WiFi.softAP(cfg.wifi_ssid, cfg.wifi_secret);
+        IPAddress IP = WiFi.softAPIP();
+        info("AP IP address: %s\n", IP.toString().c_str());
+    }
+    if(!eth_connected && (millis()-last_blink) > 500) {
+        last_blink = millis();
+        setTallyLight(32 * (count & 1), 0, 32 * !(count & 1), DISP_OFF);
+        count++;
+        info("%d\n", count);
+    }
+}
+
 void loop() {
+    wifi_loop();
     display_loop();
     buttons_loop();
     lora_loop();

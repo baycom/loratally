@@ -2,6 +2,10 @@
 
 settings_t cfg;
 
+void config_setup(void) {
+    EEPROM.begin(EEPROM_SIZE);
+}
+
 void write_config(void) {
     EEPROM.writeBytes(0, &cfg, sizeof(cfg));
     EEPROM.commit();
