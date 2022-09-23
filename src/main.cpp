@@ -48,9 +48,12 @@ void WiFiEvent(WiFiEvent_t event) {
             dbg("ETH Connected\n");
             break;
         case ARDUINO_EVENT_ETH_GOT_IP:
-            dbg("ETH MAC: %s, IPv4: %s (%s, %dMbps)\n",ETH.macAddress(), ETH.localIP(), ETH.fullDuplex()?"FULL_DUPLEX":"HALF_DUPLEX", ETH.linkSpeed());
+            info("ETH MAC: %s, IPv4: %s (%s, %dMbps)\n",ETH.macAddress().c_str(), ETH.localIP().toString(), ETH.fullDuplex()?"FULL_DUPLEX":"HALF_DUPLEX", ETH.linkSpeed());
         case ARDUINO_EVENT_WIFI_STA_GOT_IP:
             if (!eth_connected) {
+                if(event == ARDUINO_EVENT_WIFI_STA_GOT_IP) {
+                    info("WiFi MAC: %s, IPv4: %s\n",WiFi.macAddress().c_str(), WiFi.localIP().toString());
+                }
 #ifdef HAS_DISPLAY
                 display.setFont(ArialMT_Plain_10);
                 display.drawString(64, 54, "IP: " + WiFi.localIP().toString());
@@ -64,16 +67,17 @@ void WiFiEvent(WiFiEvent_t event) {
                 atem_setup();
                 tsl_setup(cfg.tsl_port);
                 eth_connected = true;
+                setTallyLight(0, 0, 0, DISP_OFF);
             }
             break;
         case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
         case ARDUINO_EVENT_ETH_DISCONNECTED:
             dbg("ETH Disconnected\n");
-            eth_connected = false;
+//            eth_connected = false;
             break;
         case ARDUINO_EVENT_ETH_STOP:
             dbg("ETH Stopped\n");
-            eth_connected = false;
+//            eth_connected = false;
             break;
         default:
             break;
