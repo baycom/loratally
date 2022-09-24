@@ -118,7 +118,7 @@ int LoRaBCTS(void) {
     LoRa.beginPacket();
     LoRa.write(t.b8, sizeof(t));
     LoRa.endPacket();
-
+    commandLast = millis();
     return 1;
 }
 
@@ -296,6 +296,7 @@ void lora_loop() {
     }
     if (cfg.command_interval &&
         (millis() - commandLast) > cfg.command_interval) {
+        dbg("Transmit commands:\n");
         LoRaBCTS();
     }
 }
