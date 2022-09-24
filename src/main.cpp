@@ -100,11 +100,11 @@ void setup() {
 
     WiFi.onEvent(WiFiEvent);
     buttons_setup();
-
+#ifdef HELTEC
     pinMode(Vext, OUTPUT);
     digitalWrite(Vext, LOW);
     delay(50);
-
+#endif
     localtally_setup();
     display_setup();
     lora_setup();
@@ -169,6 +169,7 @@ void setup() {
         WiFi.softAP(cfg.wifi_ssid, cfg.wifi_secret);
         IPAddress IP = WiFi.softAPIP();
         info("AP IP address: %s\n", IP.toString().c_str());
+#ifdef HAS_DISPLAY        
         display.setFont(ArialMT_Plain_10);
         for (int x = 0; x < 128; x++) {
             for (int y = 0; y < 20; y++) {
@@ -182,6 +183,7 @@ void setup() {
         display.drawString(64, 34, "SSID: " + String(cfg.wifi_ssid));
         display.drawString(64, 54, "IP: " + IP.toString());
         d();
+#endif        
     }
     webserver_setup();
 
@@ -189,6 +191,7 @@ void setup() {
 }
 
 void power_off(int state) {
+#ifdef HAS_DISPLAY    
     if (state & 1) {
         display.clear();
         display.setTextAlignment(TEXT_ALIGN_CENTER);
@@ -196,13 +199,18 @@ void power_off(int state) {
         display.drawString(64, 32, "Power off.");
         d();
     }
+#endif
     if (state & 2) {
         setTallyLight(0, 0, 32, DISP_OFF);
         sleep(2);
         setTallyLight(0, 0, 0, DISP_OFF);
         display.clear();
+#ifdef HAS_DISPLAY
         digitalWrite(OLED_RST, LOW);  // low to reset OLED
+#endif
+#ifdef HELTEC
         digitalWrite(Vext, HIGH);
+#endif
         LoRa.sleep();
         esp_deep_sleep_start();
     }

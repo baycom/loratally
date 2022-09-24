@@ -51,7 +51,7 @@ void buttons_loop() {
             button1.down = 0;
             float volt = BATTVOLT() / 1000.0;
             dbg("voltage: %f\n", volt);
-
+#ifdef HAS_DISPLAY
             display.clear();
             display.setTextAlignment(TEXT_ALIGN_CENTER);
             display.setFont(ArialMT_Plain_10);
@@ -68,6 +68,7 @@ void buttons_loop() {
             }
             display.drawString(64, 54, "IP: " + ipStr);
             d();
+#endif            
         }
     }
 }

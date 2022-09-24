@@ -170,12 +170,14 @@ boolean parse_settings(DynamicJsonDocument json) {
     return true;
 }
 void factory_reset(int state) {
+#ifdef HAS_DISPLAY    
     if (state & 1) {
         display.clear();
         display.setFont(ArialMT_Plain_10);
         display.drawString(64, 32, "FACTORY RESET");
         d();
     }
+#endif
     if (state & 2) {
         info("RESET Config\n");
         cfg.version = 0xff;
