@@ -1,6 +1,7 @@
 #include "main.h"
 
 bool eth_connected = false;
+bool disable_poweroff = false;
 
 static EOTAUpdate *updater;
 
@@ -26,13 +27,13 @@ static void print_wakeup_reason() {
             dbg("Wakeup caused by ULP program");
             break;
         default:
-            dbg("Wakeup was not caused by deep sleep: %d\n",
-                          wakeup_reason);
+            dbg("Wakeup was not caused by deep sleep: %d\n", wakeup_reason);
             break;
     }
     if (wakeup_reason) {
         uint64_t GPIO_reason = esp_sleep_get_ext1_wakeup_status();
-        dbg("GPIO that triggered the wake up: GPIO %d\n",log(GPIO_reason) / log(2), 0);
+        dbg("GPIO that triggered the wake up: GPIO %d\n",
+            log(GPIO_reason) / log(2), 0);
     }
 }
 
@@ -48,11 +49,15 @@ void WiFiEvent(WiFiEvent_t event) {
             dbg("ETH Connected\n");
             break;
         case ARDUINO_EVENT_ETH_GOT_IP:
-            info("ETH MAC: %s, IPv4: %s (%s, %dMbps)\n",ETH.macAddress().c_str(), ETH.localIP().toString(), ETH.fullDuplex()?"FULL_DUPLEX":"HALF_DUPLEX", ETH.linkSpeed());
+            info("ETH MAC: %s, IPv4: %s (%s, %dMbps)\n",
+                 ETH.macAddress().c_str(), ETH.localIP().toString(),
+                 ETH.fullDuplex() ? "FULL_DUPLEX" : "HALF_DUPLEX",
+                 ETH.linkSpeed());
         case ARDUINO_EVENT_WIFI_STA_GOT_IP:
             if (!eth_connected) {
-                if(event == ARDUINO_EVENT_WIFI_STA_GOT_IP) {
-                    info("WiFi MAC: %s, IPv4: %s\n",WiFi.macAddress().c_str(), WiFi.localIP().toString());
+                if (event == ARDUINO_EVENT_WIFI_STA_GOT_IP) {
+                    info("WiFi MAC: %s, IPv4: %s\n", WiFi.macAddress().c_str(),
+                         WiFi.localIP().toString());
                 }
 #ifdef HAS_DISPLAY
                 display.setFont(ArialMT_Plain_10);
@@ -73,11 +78,11 @@ void WiFiEvent(WiFiEvent_t event) {
         case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
         case ARDUINO_EVENT_ETH_DISCONNECTED:
             dbg("ETH Disconnected\n");
-//            eth_connected = false;
+            //            eth_connected = false;
             break;
         case ARDUINO_EVENT_ETH_STOP:
             dbg("ETH Stopped\n");
-//            eth_connected = false;
+            //            eth_connected = false;
             break;
         default:
             break;
@@ -87,8 +92,8 @@ void WiFiEvent(WiFiEvent_t event) {
 void setup() {
     randomSeed(analogRead(GPIO_BATTERY));
     Serial.begin(115200);
-    info("Version: %s-%s-%s, Version Number: %d, CFG Number: %d\n",
-           VERSION_STR, PLATFORM_STR, BUILD_STR, VERSION_NUMBER, cfg_ver_num);
+    info("Version: %s-%s-%s, Version Number: %d, CFG Number: %d\n", VERSION_STR,
+         PLATFORM_STR, BUILD_STR, VERSION_NUMBER, cfg_ver_num);
     info("Initializing ... ");
     config_setup();
     read_config();
@@ -127,7 +132,7 @@ void setup() {
             break;
     }
     display.drawString(64, 24, "Mode: " + modeStr);
-    if(cfg.wifi_opmode < 2) {
+    if (cfg.wifi_opmode < 2) {
         display.drawString(64, 34, "SSID: " + String(cfg.wifi_ssid));
     }
     display.drawString(64, 44, "NAME: " + String(cfg.wifi_hostname));
@@ -160,7 +165,7 @@ void setup() {
         WiFi.begin(cfg.wifi_ssid, cfg.wifi_secret);
 
         info("\n");
-    }else if (cfg.wifi_opmode == OPMODE_WIFI_ACCESSPOINT) {
+    } else if (cfg.wifi_opmode == OPMODE_WIFI_ACCESSPOINT) {
         WiFi.softAP(cfg.wifi_ssid, cfg.wifi_secret);
         IPAddress IP = WiFi.softAPIP();
         info("AP IP address: %s\n", IP.toString().c_str());
@@ -172,9 +177,8 @@ void setup() {
         }
         display.drawString(
             64, 24,
-            "WIFI: " + String((cfg.wifi_opmode == OPMODE_WIFI_STATION)
-                                    ? "STA"
-                                    : "AP"));
+            "WIFI: " + String((cfg.wifi_opmode == OPMODE_WIFI_STATION) ? "STA"
+                                                                       : "AP"));
         display.drawString(64, 34, "SSID: " + String(cfg.wifi_ssid));
         display.drawString(64, 54, "IP: " + IP.toString());
         d();
@@ -208,25 +212,28 @@ void wifi_loop() {
     static unsigned long last_blink = 0;
     static int count = 0;
 
-    if(cfg.wifi_opmode == OPMODE_WIFI_STATION && cfg.wifi_ap_fallback == 1 && WiFi.status() != WL_CONNECTED && ((millis() - eth_connected) > 10000)) {
-        uint8_t mac[10];
-        WiFi.macAddress(mac);
-        sprintf(cfg.wifi_ssid, "SIP-%02X%02X%02X", mac[3], mac[4], mac[5]);
-        warn(
-            "\nFailed to connect to SSID %s falling back to AP mode\n",
-            cfg.wifi_ssid);
-        cfg.wifi_secret[0] = 0;
-        cfg.wifi_opmode = OPMODE_WIFI_ACCESSPOINT;
-        WiFi.disconnect();
-        WiFi.softAP(cfg.wifi_ssid, cfg.wifi_secret);
-        IPAddress IP = WiFi.softAPIP();
-        info("AP IP address: %s\n", IP.toString().c_str());
-    }
-    if(!eth_connected && (millis()-last_blink) > 500) {
-        last_blink = millis();
-        setTallyLight(32 * (count & 1), 0, 32 * !(count & 1), DISP_OFF);
-        count++;
-        info("%d\n", count);
+    if (!eth_connected) {
+        if (millis() < 30000 && cfg.wifi_opmode == OPMODE_WIFI_STATION &&
+            cfg.wifi_ap_fallback == 1 && WiFi.status() != WL_CONNECTED) {
+            uint8_t mac[10];
+            WiFi.macAddress(mac);
+            sprintf(cfg.wifi_ssid, "SIP-%02X%02X%02X", mac[3], mac[4], mac[5]);
+            warn("\nFailed to connect to SSID %s falling back to AP mode\n",
+                 cfg.wifi_ssid);
+            cfg.wifi_secret[0] = 0;
+            cfg.wifi_opmode = OPMODE_WIFI_ACCESSPOINT;
+            WiFi.disconnect();
+            WiFi.softAP(cfg.wifi_ssid, cfg.wifi_secret);
+            IPAddress IP = WiFi.softAPIP();
+            info("AP IP address: %s\n", IP.toString().c_str());
+            disable_poweroff = true;
+        }
+        if ((millis() - last_blink) > 500) {
+            last_blink = millis();
+            setTallyLight(32 * (count & 1), 0, 32 * !(count & 1), DISP_OFF);
+            count++;
+            info("%d\n", count);
+        }
     }
 }
 
@@ -245,7 +252,7 @@ void loop() {
         WiFi.status() == WL_CONNECTED) {
         updater->CheckAndUpdate();
     }
-    if (cfg.inactivity_timeout>30000 && tallyLast &&
+    if (!disable_poweroff && cfg.inactivity_timeout > 30000 && tallyLast &&
         (millis() - tallyLast) > cfg.inactivity_timeout) {
         power_off(3);
     }
