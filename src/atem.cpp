@@ -1,5 +1,8 @@
 #include "main.h"
 
+#include "ATEMbase.h"
+#include "ATEMext.h"
+
 ATEMext AtemSwitcher;
 
 void atem_setup() {
@@ -14,25 +17,25 @@ void atem_setup() {
         }
         AtemSwitcher.begin(ATEMIp);
         AtemSwitcher.serialOutput(0x80);
-        AtemSwitcher.connect();
+        info("AtemSwitcher\n");
     }
 }
 
 void atem_loop() {
-    uint8_t property_vals[TALLY_MAX_NUM * 3];
-
     if (cfg.atem_host[0] && eth_connected) {
         AtemSwitcher.runLoop();
-        if (AtemSwitcher.hasInitialized()) {
+        if (AtemSwitcher.isConnected()) {
             bool tallyChanged = false;
             uint16_t indexSources = AtemSwitcher.getTallyByIndexSources();
             if (indexSources > TALLY_MAX_NUM) {
                 indexSources = TALLY_MAX_NUM;
             }
+            dbg("max: %d\n", indexSources);
             for (uint16_t n = 0; n < indexSources; n++) {
                 uint8_t tallyState = AtemSwitcher.getTallyByIndexTallyFlags(n);
                 tallyChanged |= setTallyState(n|TALLY_RH, tallyState, 3);
                 tallyChanged |= setTallyState(n|TALLY_LH, tallyState, 3);
+                dbg("tally: %d %d\n", n, tallyState);
             }
             if(tallyChanged) {
                 LoRaBCTS();

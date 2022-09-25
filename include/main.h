@@ -13,9 +13,6 @@
 #include <ESPmDNS.h>
 #include <EOTAUpdate.h>
 
-#include "ATEMbase.h"
-#include "ATEMext.h"
-
 #include "version.h"
 #include "atem.h"
 #include "buttons.h"
