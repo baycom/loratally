@@ -33,9 +33,9 @@ void atem_loop() {
             dbg("max: %d\n", indexSources);
             for (uint16_t n = 0; n < indexSources; n++) {
                 uint8_t tallyState = AtemSwitcher.getTallyByIndexTallyFlags(n);
-                tallyChanged |= setTallyState(n|TALLY_RH, tallyState, 3);
-                tallyChanged |= setTallyState(n|TALLY_LH, tallyState, 3);
-                dbg("tally: %d %d\n", n, tallyState);
+                tallyChanged |= setTallyState(n+1|TALLY_RH, tallyState, 3);
+                tallyChanged |= setTallyState(n+1|TALLY_LH, tallyState, 3);
+                dbg("tally: %d %d\n", n+1, tallyState);
             }
             if(tallyChanged) {
                 LoRaBCTS();
