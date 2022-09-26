@@ -1,4 +1,5 @@
 #include "main.h"
+#include <ESPAsyncE131.h>
 
 static ESPAsyncE131 e131(UNIVERSE_COUNT);
 static int lastPacket = -1;

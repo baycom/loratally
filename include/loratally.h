@@ -1,8 +1,6 @@
 #ifndef LORATALLY_H
 #define LORATALLY_H
 
-#include <LoRa.h>
-
 #define CMD_VERSION 3
 #define LORA_MAX_RGB 32
 #define LORA_MAX_TS 32
@@ -62,6 +60,7 @@ typedef union {
 extern int RSSIlast;
 
 void lora_setup();
+void lora_shutdown();
 uint16_t LoRaGetMsgCnt(void);
 int LoRaGetRSSI(void);
 int LoRaSend(uint8_t addr, uint8_t r, uint8_t g, uint8_t b, bool disp = false);

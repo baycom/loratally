@@ -1,6 +1,7 @@
-#include <CRC32.h>
-
 #include "main.h"
+
+#include <LoRa.h>
+#include <CRC32.h>
 
 static unsigned long statusLast = 0;
 static unsigned long commandLast = 0;
@@ -36,6 +37,10 @@ void lora_setup() {
 #ifdef DEBUG
     LoRa.dumpRegisters(Serial);
 #endif
+}
+
+void lora_shutdown() {
+    LoRa.sleep();
 }
 
 uint16_t LoRaGetMsgCnt(void) {
@@ -238,6 +243,7 @@ void lora_loop() {
                         tallyFromEncoded(t.b.rgb, cfg.tally_id);
                     } else if (t.t.cmd == cmd_BC_TS) {
                         RSSIlast = rssi;
+                        msg_cnt++;
                         for (int i = 0; i < LORA_MAX_TS; i++) {
                             LoRaDecodeTallyState(i + 1, t.bts.tally_state[i]);
                         }

@@ -1,6 +1,8 @@
 
 #include "main.h"
 
+#include <PubSubClient.h>
+
 static WiFiClient espClient;
 static PubSubClient mqttClient(espClient);
 static unsigned long mqttLast = 0;
