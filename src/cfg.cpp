@@ -173,8 +173,9 @@ void factory_reset(int state) {
 #ifdef HAS_DISPLAY    
     if (state & 1) {
         display.clear();
-        display.setFont(ArialMT_Plain_10);
-        display.drawString(64, 32, "FACTORY RESET");
+        display.setTextAlignment(TEXT_ALIGN_CENTER);
+        display.drawString(64, 12, "FACTORY");
+        display.drawString(64, 42, "RESET");
         d();
     }
 #endif

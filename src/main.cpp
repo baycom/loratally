@@ -211,7 +211,7 @@ void power_off(int state) {
 #ifdef HELTEC
         digitalWrite(Vext, HIGH);
 #endif
-        LoRa.sleep();
+        lora_shutdown();
         esp_deep_sleep_start();
     }
 }

@@ -136,11 +136,13 @@ void setTallyLight(int r, int g, int b, dispMode_t disp, int pixel,
             display.setTextAlignment(TEXT_ALIGN_CENTER);
             display.setFont(ArialMT_Plain_24);
             display.drawString(64, 20, text);
+            d();
         } else if (r | g | b) {
             display.clear();
             display.setTextAlignment(TEXT_ALIGN_CENTER);
             display.setFont(ArialMT_Plain_24);
-            display.drawString(64, 4, "Tally " + String(cfg.tally_id));
+            display.drawString(64, 20, "CAM " + String(cfg.tally_id));
+            d();
         }
         /*
                     display.drawString(64, 14, "Red  : " + String(r));
@@ -150,8 +152,8 @@ void setTallyLight(int r, int g, int b, dispMode_t disp, int pixel,
         if (disp == DISP_RSSI) {
             display.setFont(ArialMT_Plain_10);
             display.drawString(64, 44, "RSSI : " + String(RSSIlast));
+            d();
         }
-        d();
     }
 #endif
 }
