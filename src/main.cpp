@@ -220,8 +220,8 @@ void wifi_loop() {
     static unsigned long last_blink = 0;
     static int count = 0;
 
-    if (!eth_connected) {
-        if (millis() < 30000 && cfg.wifi_opmode == OPMODE_WIFI_STATION &&
+    if (!eth_connected && millis() < 30000) {
+        if (cfg.wifi_opmode == OPMODE_WIFI_STATION &&
             cfg.wifi_ap_fallback == 1 && WiFi.status() != WL_CONNECTED) {
             uint8_t mac[10];
             WiFi.macAddress(mac);
@@ -238,7 +238,7 @@ void wifi_loop() {
         }
         if ((millis() - last_blink) > 500) {
             last_blink = millis();
-            setTallyLight(32 * (count & 1), 0, 32 * !(count & 1), DISP_OFF);
+            setTallyLight(0, 0, 32 * !(count & 1), DISP_OFF);
             count++;
             info("%d\n", count);
         }
