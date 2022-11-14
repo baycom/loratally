@@ -10,6 +10,7 @@ int RSSIlast = 0;
 static uint16_t msg_cnt = 0;
 
 void lora_setup() {
+#ifdef HAS_LORA
     SPI.begin(LoRa_SCK, LoRa_MISO, LoRa_MOSI, LoRa_CS);
     LoRa.setPins(LoRa_CS, LoRa_RST, LoRa_DIO0);
 
@@ -37,10 +38,13 @@ void lora_setup() {
 #ifdef DEBUG
     LoRa.dumpRegisters(Serial);
 #endif
+#endif
 }
 
 void lora_shutdown() {
+#ifdef HAS_LORA
     LoRa.sleep();
+#endif
 }
 
 uint16_t LoRaGetMsgCnt(void) {
@@ -52,6 +56,7 @@ int LoRaGetRSSI(void) {
 }
 
 int LoRaSend(uint8_t addr, uint8_t r, uint8_t g, uint8_t b, bool disp) {
+#ifdef HAS_LORA
     tallyCMD_t t;
     memset(&t, 0, sizeof(tallyCMD_t));
     t.t.version = CMD_VERSION;
@@ -85,7 +90,7 @@ int LoRaSend(uint8_t addr, uint8_t r, uint8_t g, uint8_t b, bool disp) {
     LoRa.beginPacket();
     LoRa.write(t.b8, sizeof(t));
     LoRa.endPacket();
-
+#endif
     return 1;
 }
 
@@ -110,6 +115,7 @@ static void LoRaDecodeTallyState(int index, uint8_t tallyStateEncoded) {
 }
 
 int LoRaBCTS(void) {
+#ifdef HAS_LORA
     tallyCMD_t t;
     memset(&t, 0, sizeof(tallyCMD_t));
     t.bts.version = CMD_VERSION;
@@ -124,10 +130,12 @@ int LoRaBCTS(void) {
     LoRa.write(t.b8, sizeof(t));
     LoRa.endPacket();
     commandLast = millis();
+#endif
     return 1;
 }
 
 int LoRaBCRGB(uint8_t *property_values, int numChannels, bool disp) {
+#ifdef HAS_LORA
     tallyCMD_t t;
     memset(&t, 0, sizeof(tallyCMD_t));
     t.b.version = CMD_VERSION;
@@ -175,11 +183,12 @@ int LoRaBCRGB(uint8_t *property_values, int numChannels, bool disp) {
     LoRa.beginPacket();
     LoRa.write(t.b8, sizeof(t));
     LoRa.endPacket();
-
+#endif
     return 1;
 }
 
 void commandBC(void) {
+#ifdef HAS_LORA
     uint8_t property_vals[TALLY_MAX_NUM * 3];
     for (uint16_t n = 0; n < TALLY_MAX_NUM; n++) {
         int r, g, b;
@@ -191,9 +200,11 @@ void commandBC(void) {
         property_vals[(n * 3) + 2] = b;
     }
     LoRaBCRGB(property_vals, TALLY_MAX_NUM);
+#endif
 }
 
 static void tallyFromEncoded(uint8_t *encodedrgb, uint8_t tally_id) {
+#ifdef HAS_LORA
     if (tally_id < 1 || tally_id > 14) {
         return;
     }
@@ -210,9 +221,11 @@ static void tallyFromEncoded(uint8_t *encodedrgb, uint8_t tally_id) {
     dbg("gx: %d rx: %d bx %d y: %d\n", gx, rx, bx, y);
     dbg("r: %d g: %d b %d \n", r, g, b);
     setTallyLight(r, g, b, DISP_RSSI);
+#endif
 }
 
 void lora_loop() {
+#ifdef HAS_LORA
     int packetSize = LoRa.parsePacket();
     if (packetSize) {
         int rssi = LoRa.packetRssi();
@@ -305,4 +318,5 @@ void lora_loop() {
         dbg("Transmit commands:\n");
         LoRaBCTS();
     }
+#endif
 }
