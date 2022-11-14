@@ -30,12 +30,15 @@ void atem_loop() {
             if (indexSources > TALLY_MAX_NUM) {
                 indexSources = TALLY_MAX_NUM;
             }
+            indexSources=16;
             dbg("max: %d\n", indexSources);
             for (uint16_t n = 0; n < indexSources; n++) {
                 uint8_t tallyState = AtemSwitcher.getTallyByIndexTallyFlags(n);
-                tallyChanged |= setTallyState(n+1|TALLY_RH, tallyState, 3);
-                tallyChanged |= setTallyState(n+1|TALLY_LH, tallyState, 3);
-                dbg("tally: %d %d\n", n+1, tallyState);
+                tallyChanged |= setTallyState(n|TALLY_RH, tallyState, 3);
+                tallyChanged |= setTallyState(n|TALLY_LH, tallyState, 3);
+                if(tallyState) {
+                    dbg("tally: %d %d\n", n+1, tallyState);
+                }
             }
             if(tallyChanged) {
                 LoRaBCTS();
