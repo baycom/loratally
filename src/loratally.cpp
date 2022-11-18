@@ -16,12 +16,14 @@ void lora_setup() {
 
     if (!LoRa.begin(BAND)) {
         err("SX1276 fail\n");
+#ifdef HAS_DISPLAY
         display.clear();
         display.setTextAlignment(TEXT_ALIGN_CENTER);
         display.setFont(ArialMT_Plain_24);
         display.drawString(64, 12, "SX127X");
         display.drawString(64, 42, "FAIL");
         d();
+#endif        
         //        while (true) {
         //            yield();
         //        }

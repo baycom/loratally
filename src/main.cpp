@@ -204,8 +204,8 @@ void power_off(int state) {
         setTallyLight(0, 0, 32, DISP_OFF);
         sleep(2);
         setTallyLight(0, 0, 0, DISP_OFF);
-        display.clear();
 #ifdef HAS_DISPLAY
+        display.clear();
         digitalWrite(OLED_RST, LOW);  // low to reset OLED
 #endif
 #ifdef HELTEC
