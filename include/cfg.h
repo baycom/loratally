@@ -38,7 +38,9 @@ typedef struct {
   char mqtt_host[256];
   char atem_host[256];
   int tsl_port;
+  char tsl_host[64];
   int led_max_brightness;
+  int tally_screen; 
 } settings_t;
 
 extern settings_t cfg;

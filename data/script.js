@@ -37,6 +37,7 @@ function formToJSON()
   object["tx_power"]          = parseInt(formData.get("tx_power"));
   object["syncword"]          = parseInt(formData.get("syncword"));
   object["tally_id"]          = parseInt(formData.get("tally_id"));
+  object["tally_screen"]      = parseInt(formData.get("tally_screen"));
   object["num_pixels"]        = parseInt(formData.get("num_pixels"));
   object["tally_timeout"]     = parseInt(formData.get("tally_timeout"));
   object["display_timeout"]   = parseInt(formData.get("display_timeout"));
@@ -45,6 +46,7 @@ function formToJSON()
   object["inactivity_timeout"]= parseInt(formData.get("inactivity_timeout"));
   object["mqtt_host"]         = formData.get("mqtt_host");
   object["atem_host"]         = formData.get("atem_host");
+  object["tsl_host"]         = formData.get("tsl_host");
   object["tsl_port"]          = parseInt(formData.get("tsl_port"));
   object["command_interval"]  = parseInt(formData.get("command_interval"));
   
@@ -85,6 +87,7 @@ function JSONToForm(form, json)
   document.getElementsByName("tx_power")[0].value=json.tx_power;
   document.getElementsByName("syncword")[0].value=json.syncword;
   document.getElementsByName("tally_id")[0].value=json.tally_id;
+  document.getElementsByName("tally_screen")[0].value=json.tally_screen;
   document.getElementsByName("num_pixels")[0].value=json.num_pixels;
   document.getElementsByName("tally_timeout")[0].value=json.tally_timeout;
   document.getElementsByName("display_timeout")[0].value=json.display_timeout;
@@ -93,6 +96,7 @@ function JSONToForm(form, json)
   document.getElementsByName("status_interval")[0].value=json.status_interval;
   document.getElementsByName("command_interval")[0].value=json.command_interval;
   document.getElementsByName("atem_host")[0].value=json.atem_host;
+  document.getElementsByName("tsl_host")[0].value=json.tsl_host;
   document.getElementsByName("tsl_port")[0].value=json.tsl_port;
   document.getElementsByName("inactivity_timeout")[0].value=json.inactivity_timeout;
 }

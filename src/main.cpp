@@ -83,7 +83,7 @@ void WiFiEvent(WiFiEvent_t event) {
                 e131_setup();
                 mqtt_setup();
                 atem_setup();
-                tsl_setup(cfg.tsl_port);
+                tsl_setup(cfg.tally_screen,cfg.tally_id,cfg.tsl_host, cfg.tsl_port);
                 eth_connected = true;
                 setTallyLight(0, 0, 0, DISP_OFF);
             }

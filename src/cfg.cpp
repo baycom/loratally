@@ -33,6 +33,7 @@ void read_config(void) {
             cfg.bandwidth = 125E3;
             cfg.syncword = 0x34;
             cfg.tally_id = -1;
+            cfg.tally_screen = -1;
             cfg.num_pixels = 1;
             cfg.tally_timeout = 60000;
             cfg.display_timeout = 5000;
@@ -43,6 +44,7 @@ void read_config(void) {
             cfg.mqtt_host[0] = 0;
             cfg.atem_host[0] = 0;
             cfg.tsl_port = 0;
+            cfg.tsl_host[0] = 0;
         }
         if (cfg.ota_path[0] == 0xff) {
             cfg.ota_path[0] = 0;
@@ -69,6 +71,7 @@ void read_config(void) {
     info("spreading factor: %d\n", cfg.sf);
     info("syncword        : %d\n", cfg.syncword);
     info("tally_id        : %d\n", cfg.tally_id);
+    info("tally_screen        : %d\n", cfg.tally_screen);
     info("num_pixel       : %d\n", cfg.num_pixels);
     info("tally_timeout   : %ldms\n", cfg.tally_timeout);
     info("display_timeout : %ldms\n", cfg.display_timeout);
@@ -79,6 +82,7 @@ void read_config(void) {
     info("MQTT Host       : %s\n", cfg.mqtt_host);
     info("ATEM Host       : %s\n", cfg.atem_host);
     info("TSL Port        : %d\n", cfg.tsl_port);
+    info("TSL Host        : %s\n", cfg.tsl_host);
 }
 
 String get_settings(void) {
@@ -101,6 +105,7 @@ String get_settings(void) {
     json["tx_power"] = cfg.tx_power;
     json["syncword"] = cfg.syncword;
     json["tally_id"] = cfg.tally_id;
+    json["tally_screen"] = cfg.tally_screen;
     json["num_pixels"] = cfg.num_pixels;
     json["tally_timeout"] = cfg.tally_timeout/1000;
     json["display_timeout"] = cfg.display_timeout/1000;
@@ -111,6 +116,7 @@ String get_settings(void) {
     json["mqtt_host"] = cfg.mqtt_host;
     json["atem_host"] = cfg.atem_host;
     json["tsl_port"] = cfg.tsl_port;
+    json["tsl_host"] = cfg.tsl_host;
 
     String output;
     serializeJson(json, output);
@@ -145,6 +151,7 @@ boolean parse_settings(DynamicJsonDocument json) {
     if (json.containsKey("sf")) cfg.sf = json["sf"];
     if (json.containsKey("syncword")) cfg.syncword = json["syncword"];
     if (json.containsKey("tally_id")) cfg.tally_id = json["tally_id"];
+    if (json.containsKey("tally_screen")) cfg.tally_screen = json["tally_screen"];
     if (json.containsKey("num_pixels")) cfg.num_pixels = json["num_pixels"];
     if (json.containsKey("tally_timeout"))
         cfg.tally_timeout = (int)json["tally_timeout"]*1000;
@@ -165,6 +172,8 @@ boolean parse_settings(DynamicJsonDocument json) {
     if (json.containsKey("ota_path"))
         strncpy(cfg.ota_path, json["ota_path"], sizeof(cfg.ota_path));
     if (json.containsKey("tsl_port")) cfg.tsl_port = json["tsl_port"];
+    if (json.containsKey("tsl_host"))
+        strncpy(cfg.tsl_host, json["tsl_host"], sizeof(cfg.tsl_host));
 
     write_config();
     return true;
