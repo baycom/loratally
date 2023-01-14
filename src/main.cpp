@@ -5,6 +5,19 @@ bool disable_poweroff = false;
 
 static EOTAUpdate *updater;
 
+uint8_t battVoltToPercent(float mvolts) {
+  if(mvolts<3300)
+    return 0;
+
+  if(mvolts <3600) {
+    mvolts -= 3300;
+    return mvolts/30;
+  }
+
+  mvolts -= 3600;
+  return 10 + (mvolts * 0.15F );  // thats mvolts /6.66666666
+}
+
 static void print_wakeup_reason() {
     esp_sleep_wakeup_cause_t wakeup_reason;
 
@@ -50,7 +63,7 @@ void WiFiEvent(WiFiEvent_t event) {
             break;
         case ARDUINO_EVENT_ETH_GOT_IP:
             info("ETH MAC: %s, IPv4: %s (%s, %dMbps)\n",
-                 ETH.macAddress().c_str(), ETH.localIP().toString(),
+                 ETH.macAddress().c_str(), ETH.localIP().toString().c_str(),
                  ETH.fullDuplex() ? "FULL_DUPLEX" : "HALF_DUPLEX",
                  ETH.linkSpeed());
         case ARDUINO_EVENT_WIFI_STA_GOT_IP:
@@ -143,7 +156,18 @@ void setup() {
     updater = new EOTAUpdate(cfg.ota_path, VERSION_NUMBER);
 
     if (cfg.wifi_opmode == OPMODE_ETH_CLIENT) {
-        ETH.begin();
+    pinMode(NRST, OUTPUT);
+
+    digitalWrite(NRST, 0);
+    delay(200);
+    digitalWrite(NRST, 1);
+    delay(200);
+    digitalWrite(NRST, 0);
+    delay(200);
+    digitalWrite(NRST, 1);
+
+    ETH.begin(ETH_ADDR, ETH_POWER_PIN, ETH_MDC_PIN,
+              ETH_MDIO_PIN, ETH_TYPE, ETH_CLK_MODE);
     } else if (cfg.wifi_opmode == OPMODE_WIFI_STATION) {
         WiFi.disconnect();
         WiFi.setAutoReconnect(true);
