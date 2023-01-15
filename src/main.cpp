@@ -156,15 +156,13 @@ void setup() {
     updater = new EOTAUpdate(cfg.ota_path, VERSION_NUMBER);
 
     if (cfg.wifi_opmode == OPMODE_ETH_CLIENT) {
-    pinMode(NRST, OUTPUT);
-
-    digitalWrite(NRST, 0);
-    delay(200);
-    digitalWrite(NRST, 1);
-    delay(200);
-    digitalWrite(NRST, 0);
-    delay(200);
-    digitalWrite(NRST, 1);
+    #ifdef LILYGO_POE    
+        pinMode(NRST, OUTPUT);
+        for(int i=0;i<4;i++) {
+            digitalWrite(NRST, i&1);
+            delay(200);
+        }
+    #endif
 
     ETH.begin(ETH_ADDR, ETH_POWER_PIN, ETH_MDC_PIN,
               ETH_MDIO_PIN, ETH_TYPE, ETH_CLK_MODE);

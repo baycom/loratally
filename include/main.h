@@ -121,6 +121,24 @@
     #define Vext      12
     #define PixelPin  5
 #endif
+#ifdef LILYGO_POE
+    #define OLED_ADDRESS 0x3c
+    #define OLED_SDA 32
+    #define OLED_SCL 33
+    #define OLED_RST 34
+
+    #define GPIO_BUTTON GPIO_NUM_0
+    #define GPIO_BATTERY -1
+
+    #define LoRa_SCK  14
+    #define LoRa_MISO  2
+    #define LoRa_MOSI 15
+    #define LoRa_RST  12
+    #define LoRa_CS    4
+    #define LoRa_DIO0  16
+    #define Vext      -1
+    #define PixelPin  32
+#endif
 
 #define BUTTON_PIN_BITMASK (1LL<<GPIO_BUTTON)
 

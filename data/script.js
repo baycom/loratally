@@ -220,7 +220,7 @@ function wsConnect() {
   websocket.onmessage = function (evt) {
     tallyCMD=JSON.parse(evt.data);
     if(tallyCMD.cmd == 'STATUS') {
-      line1Span.innerHTML = " Version: " + tallyCMD.version + " Uptime: " + fancyTimeFormat(tallyCMD.uptime) + " Battery: " + (tallyCMD.battVolt/1000).toFixed(2) + "V" + " LoRaRSSI: " + tallyCMD.LoRaRSSI + "dBm"+ " LoRaMsgCnt: " + tallyCMD.LoRaMsgCnt;
+      line1Span.innerHTML = " Version: " + tallyCMD.version + " Uptime: " + fancyTimeFormat(tallyCMD.uptime) + " Battery: " + (tallyCMD.battVolt/1000).toFixed(2) + "V / " + tallyCMD.battPercent +  "% LoRaRSSI: " + tallyCMD.LoRaRSSI + "dBm"+ " LoRaMsgCnt: " + tallyCMD.LoRaMsgCnt;
     }
     if(tallyCMD.cmd == 'TALLY') {
       line2Span.innerHTML = " TallyRH: " + tallyCMD.stateRH + "/" + tallyCMD.brightnessRH + " - " + " TallyLH: " + tallyCMD.stateLH + "/" + tallyCMD.brightnessLH + " Text: " +  tallyCMD.text;

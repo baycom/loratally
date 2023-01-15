@@ -27,6 +27,7 @@ void sendStatus(void) {
     json["version"] = VERSION_STR "-" PLATFORM_STR "-" BUILD_STR;
     json["uptime"] = millis()/1000;
     json["battVolt"] = BATTVOLT();
+    json["battPercent"] = battVoltToPercent(BATTVOLT());
     json["LoRaMsgCnt"] = LoRaGetMsgCnt();
     json["LoRaRSSI"] = LoRaGetRSSI();
 
