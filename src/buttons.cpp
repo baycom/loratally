@@ -51,7 +51,7 @@ void buttons_loop() {
             button1.down = 0;
             float volt = BATTVOLT() / 1000.0;
             uint8_t percent = battVoltToPercent(BATTVOLT());
-            dbg("voltage: %f / %d%%\n", volt, percent);
+            dbg("voltage: %f / %d%\n", volt, percent);
 #ifdef HAS_DISPLAY
             display.clear();
             display.setTextAlignment(TEXT_ALIGN_CENTER);
@@ -60,7 +60,7 @@ void buttons_loop() {
             display.drawString(64, 14, "Tally ID: " + String(cfg.tally_id));
             display.drawString(64, 24, "SSID: " + String(cfg.wifi_ssid));
             display.drawString(64, 34, "NAME: " + String(cfg.wifi_hostname));
-            display.drawString(64, 44, "Batt: " + String(volt, 1) + "V/" + String(percent)+"%%");
+            display.drawString(64, 44, "Batt: " + String(volt, 1) + "V / " + String(percent)+"%");
             String ipStr;
             if(cfg.wifi_opmode == OPMODE_ETH_CLIENT) {
                 ipStr = ETH.localIP().toString();

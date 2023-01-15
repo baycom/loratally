@@ -7,6 +7,8 @@
 #include <AsyncTCP.h>
 #include <AsyncJson.h>
 #include <ESPAsyncWebServer.h>
+#include <esp_adc_cal.h>
+
 
 #include <EEPROM.h>
 #include <ESPmDNS.h>
@@ -63,7 +65,7 @@
 #endif 
 
 #define BAND 868E6
-#define BATTVOLT() (analogReadMilliVolts(GPIO_BATTERY)*(100.0+220.0)/100.0)
+#define BATTVOLT() (300.0+analogReadMilliVolts(GPIO_BATTERY)*(100.0+220.0)/100.0)
 
 #ifdef HELTEC
     #define HAS_DISPLAY

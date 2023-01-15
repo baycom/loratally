@@ -5,17 +5,33 @@ bool disable_poweroff = false;
 
 static EOTAUpdate *updater;
 
+const int lipocurve[21][2]={ {0, 3270}, {5, 3610}, {10, 3690}, {15, 3710}, {20, 3730}, {25, 3750}, {30, 3770}, {35, 3790}, {40, 3800}, {45, 3820},
+                            {50, 3840}, {55, 3850}, {60, 3870}, {65, 3910}, {70, 3950}, {75, 3980}, {80, 4020}, {85, 4080}, {90, 4110}, {95, 4150}, {100, 4200}};
+
 uint8_t battVoltToPercent(float mvolts) {
-  if(mvolts<3300)
-    return 0;
-
-  if(mvolts <3600) {
-    mvolts -= 3300;
-    return mvolts/30;
-  }
-
-  mvolts -= 3600;
-  return 10 + (mvolts * 0.15F );  // thats mvolts /6.66666666
+    if(mvolts<3270)
+        return 0;
+    int i;
+    for(i=0; i<21; i++) {
+        float v = lipocurve[i][1];
+        if((mvolts-v)<0) {
+            i--;
+            break;
+        }
+    }
+    if(i<0) {
+        return 0;
+    }
+    if(i<20) {
+        float vdiff = lipocurve[i+1][1] - lipocurve[i][1];
+        float mdiff = mvolts - lipocurve[i][1];
+        float perc = mdiff / vdiff;
+        float pdiff = lipocurve[i+1][0] - lipocurve[i][0];
+        float ret = pdiff * perc + lipocurve[i][0];
+        dbg("pos: %d mvolts: %.3f vdiff: %.3f mdiff %.3f perc: %.3f pdiff: %.3f ret: %.3f\n", i, mvolts, vdiff, mdiff, perc, pdiff, ret);
+        return ret;
+    }
+    return 100;
 }
 
 static void print_wakeup_reason() {
@@ -70,7 +86,7 @@ void WiFiEvent(WiFiEvent_t event) {
             if (!eth_connected) {
                 if (event == ARDUINO_EVENT_WIFI_STA_GOT_IP) {
                     info("WiFi MAC: %s, IPv4: %s\n", WiFi.macAddress().c_str(),
-                         WiFi.localIP().toString());
+                         WiFi.localIP().toString().c_str());
                 }
 #ifdef HAS_DISPLAY
                 display.setFont(ArialMT_Plain_10);
@@ -108,6 +124,7 @@ void setup() {
     info("Version: %s-%s-%s, Version Number: %d, CFG Number: %d\n", VERSION_STR,
          PLATFORM_STR, BUILD_STR, VERSION_NUMBER, cfg_ver_num);
     info("Initializing ... ");
+
     config_setup();
     read_config();
 
