@@ -13,6 +13,7 @@
 #include <EEPROM.h>
 #include <ESPmDNS.h>
 #include <EOTAUpdate.h>
+#include <Ewma.h>
 
 /*
  * ETH_CLOCK_GPIO0_IN   - default: external clock from crystal oscillator
@@ -152,7 +153,7 @@ extern const uint8_t data_script_js_end[] asm("_binary_data_script_js_end");
 extern bool eth_connected;
 extern bool heltec;
 
-float battVolt();
+float battVolt(bool live=false);
 uint8_t battVoltToPercent(float mvolts);
 void power_off(int state);
 #endif
