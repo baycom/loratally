@@ -65,7 +65,6 @@
 #endif 
 
 #define BAND 868E6
-#define BATTVOLT() (300.0+analogReadMilliVolts(GPIO_BATTERY)*(100.0+220.0)/100.0)
 
 #ifdef HELTEC
     #define HAS_DISPLAY
@@ -153,6 +152,7 @@ extern const uint8_t data_script_js_end[] asm("_binary_data_script_js_end");
 extern bool eth_connected;
 extern bool heltec;
 
+float battVolt();
 uint8_t battVoltToPercent(float mvolts);
 void power_off(int state);
 #endif

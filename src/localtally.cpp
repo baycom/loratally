@@ -23,11 +23,12 @@ void localtally_setup() {
 void sendStatus(void) {
     DynamicJsonDocument json(128);
     String output;
+    float mvolts = battVolt();
     json["cmd"] = "STATUS";
     json["version"] = VERSION_STR "-" PLATFORM_STR "-" BUILD_STR;
     json["uptime"] = millis()/1000;
-    json["battVolt"] = BATTVOLT();
-    json["battPercent"] = battVoltToPercent(BATTVOLT());
+    json["battVolt"] = mvolts;
+    json["battPercent"] = battVoltToPercent(mvolts);
     json["LoRaMsgCnt"] = LoRaGetMsgCnt();
     json["LoRaRSSI"] = LoRaGetRSSI();
 

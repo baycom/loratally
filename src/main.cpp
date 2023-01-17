@@ -8,6 +8,19 @@ static EOTAUpdate *updater;
 const int lipocurve[21][2]={ {0, 3270}, {5, 3610}, {10, 3690}, {15, 3710}, {20, 3730}, {25, 3750}, {30, 3770}, {35, 3790}, {40, 3800}, {45, 3820},
                             {50, 3840}, {55, 3850}, {60, 3870}, {65, 3910}, {70, 3950}, {75, 3980}, {80, 4020}, {85, 4080}, {90, 4110}, {95, 4150}, {100, 4200}};
 
+static float alpha = 0.1;
+static float output = 0;
+
+static float filter(float input) {
+	output = alpha * (input - output) + output;
+	return output;
+}
+
+float battVolt() {
+  float mvolts = 300.0+analogReadMilliVolts(GPIO_BATTERY)*(100.0+220.0)/100.0;
+  return filter(mvolts);
+}
+
 uint8_t battVoltToPercent(float mvolts) {
     if(mvolts<3270)
         return 0;
