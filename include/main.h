@@ -23,8 +23,12 @@
  */
 #define ETH_CLK_MODE ETH_CLOCK_GPIO17_OUT
 
+#ifdef LILYGO_POE
 // Pin# of the enable signal for the external crystal oscillator (-1 to disable for internal APLL source)
 #define ETH_POWER_PIN 16
+#else
+#define ETH_POWER_PIN -1
+#endif
 
 // Type of the Ethernet PHY (LAN8720 or TLK110)
 #define ETH_TYPE ETH_PHY_LAN8720
@@ -66,9 +70,18 @@
 #endif 
 
 #define BAND 868E6
+#define OLED_ADDRESS 0x3c
+#define OLED_ADDRESS 0x3c
+#define OLED_SDA 4  
+#define OLED_SCL 15 
+#define OLED_RST 16 
+#define GPIO_BUTTON 0
+#define PixelPin 23
+#define GPIO_BATTERY GPIO_NUM_35
 
 #ifdef HELTEC
     #define HAS_DISPLAY
+//    #define HAS_DISPLAY_UPSIDEDOWN
     #define HAS_PIXEL
     #define OLED_ADDRESS 0x3c
     #define OLED_SDA 4  
