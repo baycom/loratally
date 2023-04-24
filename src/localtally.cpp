@@ -133,17 +133,24 @@ void setTallyLight(int r, int g, int b, dispMode_t disp, int pixel,
 #endif    
 #ifdef HAS_DISPLAY
     if (disp > DISP_OFF) {
+            float mvolts = battVolt();
+            uint8_t percent = battVoltToPercent(mvolts);
+            dbg("voltage: %f / %d%\n", mvolts, percent);
         if (text != NULL && strlen(text)) {
             display.clear();
             display.setTextAlignment(TEXT_ALIGN_CENTER);
             display.setFont(ArialMT_Plain_24);
             display.drawString(64, 20, text);
+            display.setFont(ArialMT_Plain_10);
+            display.drawString(64, 54, "Batt: " + String(mvolts/1000.0, 1) + "V / " + String(percent)+"%");
             d();
         } else if (r | g | b) {
             display.clear();
             display.setTextAlignment(TEXT_ALIGN_CENTER);
             display.setFont(ArialMT_Plain_24);
             display.drawString(64, 20, "CAM " + String(cfg.tally_id));
+            display.setFont(ArialMT_Plain_10);
+            display.drawString(64, 54, "Batt: " + String(mvolts/1000.0, 1) + "V / " + String(percent)+"%");
             d();
         }
         /*
@@ -162,7 +169,7 @@ void setTallyLight(int r, int g, int b, dispMode_t disp, int pixel,
 
 void setTallyLight(int tally_id, dispMode_t disp, int pixel, char *text) {
     uint8_t state, brightness;
-    if (pixel < 2) {
+    if (pixel & 1) {
         tally_id |= TALLY_RH;
     } else {
         tally_id |= TALLY_LH;
@@ -179,6 +186,8 @@ void tally_loop() {
         if(cfg.tally_id > 0 && cfg.tally_id < (TALLY_MAX_NUM/2)) {
             setTallyLight(cfg.tally_id, DISP_ON, 1, tallyText);
             setTallyLight(cfg.tally_id, DISP_OFF, 2);
+            setTallyLight(cfg.tally_id, DISP_OFF, 3);
+            setTallyLight(cfg.tally_id, DISP_OFF, 4);
             sendTally();
         }
     }
