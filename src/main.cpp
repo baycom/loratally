@@ -5,13 +5,16 @@ bool disable_poweroff = false;
 
 static EOTAUpdate *updater;
 
-const int lipocurve[21][2]={ {0, 3270}, {5, 3610}, {10, 3690}, {15, 3710}, {20, 3730}, {25, 3750}, {30, 3770}, {35, 3790}, {40, 3800}, {45, 3820},
-                            {50, 3840}, {55, 3850}, {60, 3870}, {65, 3910}, {70, 3950}, {75, 3980}, {80, 4020}, {85, 4080}, {90, 4110}, {95, 4150}, {100, 4200}};
+#define BAT_BIAS -300
+const int lipocurve[21][2]={ {0, 3270+BAT_BIAS}, {5, 3610+BAT_BIAS}, {10, 3690+BAT_BIAS}, {15, 3710+BAT_BIAS}, {20, 3730+BAT_BIAS}, {25, 3750+BAT_BIAS}, {30, 3770+BAT_BIAS}, {35, 3790+BAT_BIAS}, {40, 3800+BAT_BIAS}, {45, 3820+BAT_BIAS},
+                            {50, 3840+BAT_BIAS}, {55, 3850+BAT_BIAS}, {60, 3870+BAT_BIAS}, {65, 3910+BAT_BIAS}, {70, 3950+BAT_BIAS}, {75, 3980+BAT_BIAS}, {80, 4020+BAT_BIAS}, {85, 4080+BAT_BIAS}, {90, 4110+BAT_BIAS}, {95, 4150+BAT_BIAS}, {100, 4200}};
+
+#define MEASURE_BIAS 300.0
 
 Ewma *voltageFilter;
 
 float battVolt(bool live) {
-  float mvolts = 300.0+analogReadMilliVolts(GPIO_BATTERY)*(100.0+220.0)/100.0;
+  float mvolts = MEASURE_BIAS + analogReadMilliVolts(GPIO_BATTERY)*(100.0+220.0)/100.0;
   if(live) {
     return mvolts;
   }
@@ -134,7 +137,7 @@ void setup() {
     info("Version: %s-%s-%s, Version Number: %d, CFG Number: %d\n", VERSION_STR,
          PLATFORM_STR, BUILD_STR, VERSION_NUMBER, cfg_ver_num);
     info("Initializing ... ");
-    voltageFilter = new Ewma(0.1, battVolt(true));
+    voltageFilter = new Ewma(0.1, 3.5);
     config_setup();
     read_config();
 
@@ -190,9 +193,8 @@ void setup() {
             delay(200);
         }
     #endif
-
-    ETH.begin(ETH_ADDR, ETH_POWER_PIN, ETH_MDC_PIN,
-              ETH_MDIO_PIN, ETH_TYPE, ETH_CLK_MODE);
+    ETH.begin();
+//    ETH.begin(ETH_ADDR, ETH_POWER_PIN, ETH_MDC_PIN, ETH_MDIO_PIN, ETH_TYPE, ETH_CLK_MODE);
     } else if (cfg.wifi_opmode == OPMODE_WIFI_STATION) {
         WiFi.disconnect();
         WiFi.setAutoReconnect(true);
