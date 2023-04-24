@@ -12,7 +12,9 @@ void display_setup() {
     digitalWrite(OLED_RST, HIGH);  // must be high to turn on OLED
 
     display.init();
-    display.flipScreenVertically();
+    #ifdef HAS_DISPLAY_UPSIDEDOWN 
+        display.flipScreenVertically();
+    #endif
 #endif
 }
 
