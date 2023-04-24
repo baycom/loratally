@@ -23,12 +23,11 @@ void localtally_setup() {
 void sendStatus(void) {
     DynamicJsonDocument json(128);
     String output;
-    float mvolts = battVolt();
     json["cmd"] = "STATUS";
     json["version"] = VERSION_STR "-" PLATFORM_STR "-" BUILD_STR;
     json["uptime"] = millis()/1000;
-    json["battVolt"] = mvolts;
-    json["battPercent"] = battVoltToPercent(mvolts);
+    json["battPercent"] = battVoltToPercent(get_batt_volt());
+    json["battVolt"] = get_batt_volt();
     json["LoRaMsgCnt"] = LoRaGetMsgCnt();
     json["LoRaRSSI"] = LoRaGetRSSI();
 
@@ -133,16 +132,14 @@ void setTallyLight(int r, int g, int b, dispMode_t disp, int pixel,
 #endif    
 #ifdef HAS_DISPLAY
     if (disp > DISP_OFF) {
-            float mvolts = battVolt();
-            uint8_t percent = battVoltToPercent(mvolts);
-            dbg("voltage: %f / %d%\n", mvolts, percent);
+        uint8_t percent = battVoltToPercent(get_batt_volt());
         if (text != NULL && strlen(text)) {
             display.clear();
             display.setTextAlignment(TEXT_ALIGN_CENTER);
             display.setFont(ArialMT_Plain_24);
             display.drawString(64, 20, text);
             display.setFont(ArialMT_Plain_10);
-            display.drawString(64, 54, "Batt: " + String(mvolts/1000.0, 1) + "V / " + String(percent)+"%");
+            display.drawString(64, 54, "Batt: " + String(get_batt_volt()/1000.0, 1) + "V / " + String(percent)+"%");
             d();
         } else if (r | g | b) {
             display.clear();
@@ -150,7 +147,7 @@ void setTallyLight(int r, int g, int b, dispMode_t disp, int pixel,
             display.setFont(ArialMT_Plain_24);
             display.drawString(64, 20, "CAM " + String(cfg.tally_id));
             display.setFont(ArialMT_Plain_10);
-            display.drawString(64, 54, "Batt: " + String(mvolts/1000.0, 1) + "V / " + String(percent)+"%");
+            display.drawString(64, 54, "Batt: " + String(get_batt_volt()/1000.0, 1) + "V / " + String(percent)+"%");
             d();
         }
         /*

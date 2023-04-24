@@ -166,7 +166,7 @@ extern const uint8_t data_script_js_end[] asm("_binary_data_script_js_end");
 extern bool eth_connected;
 extern bool heltec;
 
-float battVolt(bool live=false);
 uint8_t battVoltToPercent(float mvolts);
+float get_batt_volt(void);
 void power_off(int state);
 #endif

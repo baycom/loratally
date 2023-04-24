@@ -3,6 +3,8 @@
 bool eth_connected = false;
 bool disable_poweroff = false;
 
+static float batt_volt;
+static unsigned long last_batt_volt = 0;
 static EOTAUpdate *updater;
 
 #define BAT_BIAS -300
@@ -12,14 +14,6 @@ const int lipocurve[21][2]={ {0, 3270+BAT_BIAS}, {5, 3610+BAT_BIAS}, {10, 3690+B
 #define MEASURE_BIAS 300.0
 
 Ewma *voltageFilter;
-
-float battVolt(bool live) {
-  float mvolts = MEASURE_BIAS + analogReadMilliVolts(GPIO_BATTERY)*(100.0+220.0)/100.0;
-  if(live) {
-    return mvolts;
-  }
-  return voltageFilter->filter(mvolts);
-}
 
 uint8_t battVoltToPercent(float mvolts) {
     if(mvolts<3270)
@@ -45,6 +39,18 @@ uint8_t battVoltToPercent(float mvolts) {
         return ret;
     }
     return 100;
+}
+
+static void batt_volt_loop(void) {
+    if((millis() - last_batt_volt) > 1000) {
+        batt_volt=voltageFilter->filter(MEASURE_BIAS + analogReadMilliVolts(GPIO_BATTERY)*(100.0+220.0)/100.0);
+        dbg("batt_volt: %.2f  batt_percent: %d\n", batt_volt, battVoltToPercent(batt_volt));
+        last_batt_volt = millis();
+    }
+}
+
+float get_batt_volt(void) {
+    return batt_volt;
 }
 
 static void print_wakeup_reason() {
@@ -137,7 +143,13 @@ void setup() {
     info("Version: %s-%s-%s, Version Number: %d, CFG Number: %d\n", VERSION_STR,
          PLATFORM_STR, BUILD_STR, VERSION_NUMBER, cfg_ver_num);
     info("Initializing ... ");
-    voltageFilter = new Ewma(0.1, 3.5);
+    int milliVolts=analogReadMilliVolts(GPIO_BATTERY);
+    usleep(100*1000);
+    milliVolts=analogReadMilliVolts(GPIO_BATTERY);
+    usleep(100*1000);
+    milliVolts=analogReadMilliVolts(GPIO_BATTERY);
+    voltageFilter = new Ewma(0.1, milliVolts+600);
+
     config_setup();
     read_config();
 
@@ -306,6 +318,7 @@ void loop() {
     atem_loop();
     tsl_loop();
     tally_loop();
+    batt_volt_loop();
 
     if (cfg.ota_path[0] && WiFi.getMode() == WIFI_MODE_STA &&
         WiFi.status() == WL_CONNECTED) {

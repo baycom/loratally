@@ -303,7 +303,7 @@ void lora_loop() {
         s.s.version = CMD_VERSION;
         s.s.cmd = cmd_STATUS;
         s.s.addr = cfg.tally_id;
-        s.s.voltage = battVolt() / 100.0;
+        s.s.voltage = get_batt_volt() / 100.0;
         s.s.msgcnt = msg_cnt;
         s.s.rssi = RSSIlast;
         WiFi.macAddress(s.s.mac);
