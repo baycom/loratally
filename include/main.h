@@ -56,6 +56,7 @@
 #include "mqtt.h"
 #include "TSLReceiver.h"
 #include "webserver.h"
+#include "modbus.h"
 
 #ifdef DEBUG
   #define dbg(format, arg...) {printf("%s:%d " format , __FILE__ , __LINE__ , ## arg);}
@@ -71,14 +72,15 @@
 
 #define BAND 868E6
 #define OLED_ADDRESS 0x3c
-#define OLED_ADDRESS 0x3c
+
+/*
 #define OLED_SDA 4  
 #define OLED_SCL 15 
 #define OLED_RST 16 
 #define GPIO_BUTTON 0
 #define PixelPin 23
 #define GPIO_BATTERY GPIO_NUM_35
-
+*/
 #ifdef HELTEC
     #define HAS_DISPLAY
 //    #define HAS_DISPLAY_UPSIDEDOWN
@@ -116,7 +118,10 @@
     #define LoRa_CS    2  
     #define LoRa_DIO0  5 
     #define Vext      12
-    #define PixelPin  23  
+    #define PixelPin  23
+
+    #define MODBUS_TX 32
+    #define MODBUS_RX 33  
 #endif
 #ifdef OLIMEX_POE
     #define HAS_PIXEL
@@ -136,6 +141,9 @@
     #define LoRa_DIO0 36
     #define Vext      12
     #define PixelPin  5
+
+    #define MODBUS_TX 32
+    #define MODBUS_RX 33  
 #endif
 #ifdef LILYGO_POE
     #define OLED_ADDRESS 0x3c

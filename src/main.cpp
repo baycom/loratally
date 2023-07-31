@@ -163,6 +163,7 @@ void setup() {
     localtally_setup();
     display_setup();
     lora_setup();
+    modbus_setup();
 
     setTallyLight(32, 0, 0, DISP_OFF);
 
@@ -319,6 +320,7 @@ void loop() {
     tsl_loop();
     tally_loop();
     batt_volt_loop();
+    modbus_loop();
 
     if (cfg.ota_path[0] && WiFi.getMode() == WIFI_MODE_STA &&
         WiFi.status() == WL_CONNECTED) {
