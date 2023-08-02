@@ -3,8 +3,9 @@
 #include "main.h"
 
 ModbusMaster node;
+static uint8_t tallyState[TALLY_MAX_NUM];
 
-void preTransmission() { usleep(2000); }
+void preTransmission() { usleep(4000); }
 
 void modbus_setup() {
 #ifdef HAS_MODBUS
@@ -12,6 +13,7 @@ void modbus_setup() {
     Serial2.begin(9600, SERIAL_8N1, MODBUS_RX, MODBUS_TX);
     node.preTransmission(preTransmission);
     node.begin(1, Serial2);
+    node.writeSingleRegister(0, 0x0800);
 #endif
 }
 
@@ -21,15 +23,18 @@ void modbus_loop() {
         uint8_t state;
         uint8_t brightness;
         getTallyState(i, state, brightness);
-        if (state & 1) {
-            node.writeSingleRegister(i, 0x0100);
-            node.writeSingleRegister(i + 8, 0x0200);
-        } else if (state & 2) {
-            node.writeSingleRegister(i, 0x0200);
-            node.writeSingleRegister(i + 8, 0x0100);
-        } else {
-            node.writeSingleRegister(i, 0x0200);
-            node.writeSingleRegister(i + 8, 0x0200);
+        if (tallyState[i] != state) {
+            tallyState[i] = state;
+            if (state & 1) {
+                node.writeSingleRegister(i, 0x0100);
+                node.writeSingleRegister(i + 8, 0x0200);
+            } else if (state & 2) {
+                node.writeSingleRegister(i, 0x0200);
+                node.writeSingleRegister(i + 8, 0x0100);
+            } else {
+                node.writeSingleRegister(i, 0x0200);
+                node.writeSingleRegister(i + 8, 0x0200);
+            }
         }
     }
 #endif
