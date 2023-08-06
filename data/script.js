@@ -46,6 +46,7 @@ function formToJSON()
   object["inactivity_timeout"]= parseInt(formData.get("inactivity_timeout"));
   object["mqtt_host"]         = formData.get("mqtt_host");
   object["atem_host"]         = formData.get("atem_host");
+  object["atem_channel_offset"] = parseInt(formData.get("atem_channel_offset"));
   object["tsl_host"]         = formData.get("tsl_host");
   object["tsl_port"]          = parseInt(formData.get("tsl_port"));
   object["command_interval"]  = parseInt(formData.get("command_interval"));
@@ -96,6 +97,7 @@ function JSONToForm(form, json)
   document.getElementsByName("status_interval")[0].value=json.status_interval;
   document.getElementsByName("command_interval")[0].value=json.command_interval;
   document.getElementsByName("atem_host")[0].value=json.atem_host;
+  document.getElementsByName("atem_channel_offset")[0].value=json.atem_channel_offset;
   document.getElementsByName("tsl_host")[0].value=json.tsl_host;
   document.getElementsByName("tsl_port")[0].value=json.tsl_port;
   document.getElementsByName("inactivity_timeout")[0].value=json.inactivity_timeout;

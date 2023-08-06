@@ -41,6 +41,7 @@ typedef struct {
   char tsl_host[64];
   int led_max_brightness;
   int tally_screen; 
+  int atem_channel_offset;
 } settings_t;
 
 extern settings_t cfg;

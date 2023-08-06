@@ -45,6 +45,7 @@ void read_config(void) {
             cfg.atem_host[0] = 0;
             cfg.tsl_port = 0;
             cfg.tsl_host[0] = 0;
+            cfg.atem_channel_offset = 1;
         }
         if (cfg.ota_path[0] == 0xff) {
             cfg.ota_path[0] = 0;
@@ -81,6 +82,7 @@ void read_config(void) {
     info("command_interval: %ldms\n", cfg.command_interval);
     info("MQTT Host       : %s\n", cfg.mqtt_host);
     info("ATEM Host       : %s\n", cfg.atem_host);
+    info("ATEM Chn Offset : %d\n", cfg.atem_channel_offset)
     info("TSL Port        : %d\n", cfg.tsl_port);
     info("TSL Host        : %s\n", cfg.tsl_host);
 }
@@ -115,6 +117,7 @@ String get_settings(void) {
     json["inactivity_timeout"] = cfg.inactivity_timeout/1000;
     json["mqtt_host"] = cfg.mqtt_host;
     json["atem_host"] = cfg.atem_host;
+    json["atem_channel_offset"] = cfg.atem_channel_offset;
     json["tsl_port"] = cfg.tsl_port;
     json["tsl_host"] = cfg.tsl_host;
 
@@ -169,6 +172,8 @@ boolean parse_settings(DynamicJsonDocument json) {
         strncpy(cfg.mqtt_host, json["mqtt_host"], sizeof(cfg.mqtt_host));
     if (json.containsKey("atem_host"))
         strncpy(cfg.atem_host, json["atem_host"], sizeof(cfg.atem_host));
+    if (json.containsKey("atem_channel_offset"))
+        cfg.atem_channel_offset = (int)json["atem_channel_offset"];
     if (json.containsKey("ota_path"))
         strncpy(cfg.ota_path, json["ota_path"], sizeof(cfg.ota_path));
     if (json.containsKey("tsl_port")) cfg.tsl_port = json["tsl_port"];

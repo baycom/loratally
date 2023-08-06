@@ -92,7 +92,7 @@ bool setTallyState(int index, uint8_t state, uint8_t brightness, char *text) {
 }
 
 bool getTallyState(int index, uint8_t &state, uint8_t &brightness) {
-    if (index >=0 && index < TALLY_MAX_NUM) {
+    if (index >0 && index < TALLY_MAX_NUM) {
         state = tallyState[index - 1];
         brightness = tallyBrightness[index - 1];
         return true;
