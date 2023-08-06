@@ -6,7 +6,7 @@
 #define OPMODE_WIFI_STATION 1
 #define OPMODE_ETH_CLIENT 2
 
-#define cfg_ver_num 0x1
+#define cfg_ver_num 0x2
 
 typedef struct {
   byte version;
