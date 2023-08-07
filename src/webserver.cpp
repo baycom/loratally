@@ -27,6 +27,7 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
         String str = get_settings();
         client->printf("%s", str.c_str());
         client->ping();
+        sendTally();
     } else if (type == WS_EVT_DISCONNECT) {
         // client disconnected
         dbg("ws[%s][%u] disconnect: %u\n", server->url(), client->id());
