@@ -30,19 +30,11 @@ void atem_loop() {
             if (indexSources > TALLY_MAX_NUM) {
                 indexSources = TALLY_MAX_NUM;
             }
-            indexSources=16;
-//            dbg("max: %d\n", indexSources);
-            for (uint16_t n = 0; n < indexSources; n++) {
-                int offset = cfg.atem_channel_offset;
-                if(offset < 0 ) {
-                    offset = 0;
-                }
-                if(offset >16 ) {
-                    offset = 16;
-                }
+//            indexSources=16;
+            for (uint16_t n = cfg.atem_channel_offset; n < indexSources; n++) {
                 uint8_t tallyState = AtemSwitcher.getTallyByIndexTallyFlags(n);
-                tallyChanged |= setTallyState(n+offset|TALLY_RH, tallyState, 3);
-                tallyChanged |= setTallyState(n+offset|TALLY_LH, tallyState, 3);
+                tallyChanged |= setTallyState(n+1|TALLY_RH, tallyState, 3);
+                tallyChanged |= setTallyState(n+1|TALLY_LH, tallyState, 3);
                 if(tallyState && tallyChanged) {
                     dbg("tally: %d %d\n", n+1, tallyState);
                 }
