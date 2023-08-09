@@ -27,14 +27,10 @@ void atem_loop() {
         if (AtemSwitcher.isConnected()) {
             bool tallyChanged = false;
             uint16_t indexSources = AtemSwitcher.getTallyByIndexSources();
-            if (indexSources > TALLY_MAX_NUM) {
-                indexSources = TALLY_MAX_NUM;
-            }
-//            indexSources=16;
-            for (uint16_t n = cfg.atem_channel_offset; n < indexSources; n++) {
+            for (uint16_t tc=1, n = cfg.atem_channel_offset; n < indexSources && tc < (TALLY_MAX_NUM>>1); n++, tc++) {
                 uint8_t tallyState = AtemSwitcher.getTallyByIndexTallyFlags(n);
-                tallyChanged |= setTallyState(n+1|TALLY_RH, tallyState, 3);
-                tallyChanged |= setTallyState(n+1|TALLY_LH, tallyState, 3);
+                tallyChanged |= setTallyState(tc|TALLY_RH, tallyState, 3);
+                tallyChanged |= setTallyState(tc|TALLY_LH, tallyState, 3);
                 if(tallyState && tallyChanged) {
                     dbg("tally: %d %d\n", n+1, tallyState);
                 }

@@ -30,7 +30,7 @@ void setTallyLight(int r, int g, int b, dispMode_t disp = DISP_ON, int pixel = 0
                    char *text = NULL);
 void setTallyLight(int tally_id, dispMode_t disp = DISP_ON, int pixel = 0,
                    char *text = NULL);
-
+void sendTally(void);
 void tally_loop();
 
 #endif
