@@ -5,12 +5,12 @@
 ModbusMaster node;
 static uint8_t tallyState[TALLY_MAX_NUM];
 
-void preTransmission() { usleep(4000); }
+void preTransmission() { usleep(2000); }
 
 void modbus_setup() {
 #ifdef HAS_MODBUS
     dbg("Init Modbus\n");
-    Serial2.begin(9600, SERIAL_8N1, MODBUS_RX, MODBUS_TX);
+    Serial2.begin(19200, SERIAL_8N1, MODBUS_RX, MODBUS_TX);
     node.preTransmission(preTransmission);
     node.begin(1, Serial2);
     node.writeSingleRegister(0, 0x0800);
