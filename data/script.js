@@ -30,7 +30,7 @@ function formToJSON()
   object["ip_gw"]             = formData.get("ip_gw");
   object["ip_netmask"]        = formData.get("ip_netmask");
   object["ip_dns"]            = formData.get("ip_dns");
-
+  object["ota_path"]          = formData.get("ota_path");
   object["tx_frequency"]      = parseInt(formData.get("tx_frequency"));
   object["sf"]                = parseInt(formData.get("sf"));
   object["bandwidth"]         = parseInt(formData.get("bandwidth"));
@@ -50,7 +50,7 @@ function formToJSON()
   object["tsl_host"]         = formData.get("tsl_host");
   object["tsl_port"]          = parseInt(formData.get("tsl_port"));
   object["command_interval"]  = parseInt(formData.get("command_interval"));
-  
+
   return JSON.stringify(object);
 }
 
@@ -81,7 +81,7 @@ function JSONToForm(form, json)
   document.getElementsByName("ip_gw")[0].value=json.ip_gw;
   document.getElementsByName("ip_netmask")[0].value=json.ip_netmask;
   document.getElementsByName("ip_dns")[0].value=json.ip_dns;
-
+  document.getElementsByName("ota_path")[0].value=json.ota_path;
   document.getElementsByName("tx_frequency")[0].value=json.tx_frequency;
   document.getElementsByName("sf")[0].value=json.sf;
   document.getElementsByName("bandwidth")[0].value=json.bandwidth;

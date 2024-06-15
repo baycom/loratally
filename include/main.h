@@ -83,7 +83,7 @@
 */
 #ifdef HELTEC
     #define HAS_DISPLAY
-//    #define HAS_DISPLAY_UPSIDEDOWN
+    #define HAS_DISPLAY_UPSIDEDOWN
     #define HAS_PIXEL
     #define OLED_ADDRESS 0x3c
     #define OLED_SDA 4  
