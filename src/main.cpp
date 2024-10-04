@@ -42,11 +42,13 @@ uint8_t battVoltToPercent(float mvolts) {
 }
 
 static void batt_volt_loop(void) {
+    #if GPIO_BATTERY != -1
     if((millis() - last_batt_volt) > 1000) {
-        batt_volt=voltageFilter->filter(MEASURE_BIAS + analogReadMilliVolts(GPIO_BATTERY)*(100.0+220.0)/100.0);
+        batt_volt=voltageFilter->filter(MEASURE_BIAS + analogReadMilliVolts(GPIO_BATTERY)*(ADCR1+ADCR2)/ADCR1);
         dbg("batt_volt: %.2f  batt_percent: %d\n", batt_volt, battVoltToPercent(batt_volt));
         last_batt_volt = millis();
     }
+    #endif
 }
 
 float get_batt_volt(void) {
@@ -143,6 +145,16 @@ void setup() {
     info("Version: %s-%s-%s, Version Number: %d, CFG Number: %d\n", VERSION_STR,
          PLATFORM_STR, BUILD_STR, VERSION_NUMBER, cfg_ver_num);
     info("Initializing ... ");
+#if defined HELTEC || defined HELTECV3
+    pinMode(Vext, OUTPUT);
+    digitalWrite(Vext, LOW);
+    delay(50);
+#endif
+#ifdef HELTECV3
+    pinMode(ADCctrl, OUTPUT);
+    digitalWrite(ADCctrl, LOW);
+    delay(50);
+#endif
     int milliVolts=analogReadMilliVolts(GPIO_BATTERY);
     usleep(100*1000);
     milliVolts=analogReadMilliVolts(GPIO_BATTERY);
@@ -155,11 +167,6 @@ void setup() {
 
     WiFi.onEvent(WiFiEvent);
     buttons_setup();
-#ifdef HELTEC
-    pinMode(Vext, OUTPUT);
-    digitalWrite(Vext, LOW);
-    delay(50);
-#endif
     localtally_setup();
     display_setup();
     lora_setup();

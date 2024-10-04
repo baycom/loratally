@@ -7,6 +7,7 @@ static unsigned long displayCleared = millis();
 void display_setup() {
 #ifdef HAS_DISPLAY
     pinMode(OLED_RST, OUTPUT);
+
     digitalWrite(OLED_RST, LOW);  // low to reset OLED
     delay(50);
     digitalWrite(OLED_RST, HIGH);  // must be high to turn on OLED
@@ -15,7 +16,7 @@ void display_setup() {
     #ifdef HAS_DISPLAY_UPSIDEDOWN 
         display.flipScreenVertically();
     #endif
-#endif
+    #endif
 }
 
 void d() {

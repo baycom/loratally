@@ -157,7 +157,7 @@ void setTallyLight(int r, int g, int b, dispMode_t disp, int pixel,
         */
         if (disp == DISP_RSSI) {
             display.setFont(ArialMT_Plain_10);
-            display.drawString(64, 44, "RSSI : " + String(RSSIlast));
+            display.drawString(64, 44, "RSSI : " + String(LoRaGetRSSI()));
             d();
         }
     }

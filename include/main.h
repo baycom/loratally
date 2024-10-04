@@ -84,23 +84,58 @@
 #ifdef HELTEC
     #define HAS_DISPLAY
     #define HAS_DISPLAY_UPSIDEDOWN
-    #define HAS_PIXEL
     #define OLED_ADDRESS 0x3c
-    #define OLED_SDA 4  
+    #define OLED_SDA 4
     #define OLED_SCL 15 
     #define OLED_RST 16 
 
     #define GPIO_BUTTON GPIO_NUM_0
     #define GPIO_BATTERY GPIO_NUM_37
 
+    #define HAS_LORA
     #define LoRa_SCK  5 //SCK   // GPIO 5
     #define LoRa_MISO 19 //MISO  // GPIO 19
     #define LoRa_MOSI 27 //MOSI  // GPIO 27
     #define LoRa_RST  14 //RST_LoRa  // GPIO 14
     #define LoRa_CS   18 //SS   // GPIO 18
     #define LoRa_DIO0 26 //DIO0 // GPIO 26
+    #define LoRa DIO1 35
+    #define LoRa DIO2 34
+
+    #define ADCR1     100.0
+    #define ADCR2     220.0
     #define Vext      21
+
+    #define HAS_PIXEL
     #define PixelPin  23 // make sure to set this to the correct pin, ignored for Esp8266
+#endif
+#ifdef HELTECV3
+    #define HAS_DISPLAY
+    #define HAS_DISPLAY_UPSIDEDOWN
+    #define OLED_ADDRESS 0x3c
+    #define OLED_SDA 17
+    #define OLED_SCL 18
+    #define OLED_RST 21
+
+    #define GPIO_BUTTON GPIO_NUM_0
+    #define GPIO_BATTERY GPIO_NUM_1
+
+    #define HAS_LORA
+    #define LoRa_SCK  9
+    #define LoRa_MISO 11
+    #define LoRa_MOSI 10
+    #define LoRa_RST  12
+    #define LoRa_CS   8 //SS
+    #define LoRa_DIO1 14
+    #define LoRa_BUSY 13
+
+    #define Vext      36
+    #define ADCctrl   37
+    #define ADCR1     100.0
+    #define ADCR2     390.0
+
+    #define HAS_PIXEL
+    #define PixelPin  4
 #endif
 #ifdef OLIMEX_POE_ISO 
     #define OLED_ADDRESS 0x3c
@@ -111,20 +146,25 @@
     #define GPIO_BUTTON GPIO_NUM_34
     #define GPIO_BATTERY GPIO_NUM_35
 
+    #define ADCR1     470.0
+    #define ADCR2     470.0
+
+    #define HAS_LORA
     #define LoRa_SCK  13
     #define LoRa_MISO  4
     #define LoRa_MOSI 16
     #define LoRa_RST  14  
     #define LoRa_CS    2  
     #define LoRa_DIO0  5 
+
     #define Vext      12
+
     #define PixelPin  23
 
     #define MODBUS_TX 32
     #define MODBUS_RX 33  
 #endif
 #ifdef OLIMEX_POE
-    #define HAS_PIXEL
     #define OLED_ADDRESS 0x3c
     #define OLED_SDA 36
     #define OLED_SCL 36
@@ -133,13 +173,20 @@
     #define GPIO_BUTTON GPIO_NUM_34
     #define GPIO_BATTERY GPIO_NUM_35
 
+    #define Vext      12
+    #define ADCR1     470.0
+    #define ADCR2     470.0
+
+    #define HAS_LORA
     #define LoRa_SCK  13
     #define LoRa_MISO  4
     #define LoRa_MOSI 16
     #define LoRa_RST  14
     #define LoRa_CS    2
     #define LoRa_DIO0 36
-    #define Vext      12
+
+
+    #define HAS_PIXEL
     #define PixelPin  5
 
     #define MODBUS_TX 32
@@ -154,13 +201,16 @@
     #define GPIO_BUTTON GPIO_NUM_0
     #define GPIO_BATTERY -1
 
+    #define HAS_LORA
     #define LoRa_SCK  14
     #define LoRa_MISO  2
     #define LoRa_MOSI 15
     #define LoRa_RST  12
     #define LoRa_CS    4
     #define LoRa_DIO0  16
+
     #define Vext      -1
+
     #define PixelPin  32
 #endif
 

@@ -57,8 +57,6 @@ typedef union {
     uint8_t  b8[36];
 } tallyCMD_t;
 
-extern int RSSIlast;
-
 void lora_setup();
 void lora_shutdown();
 uint16_t LoRaGetMsgCnt(void);

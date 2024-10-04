@@ -9,6 +9,9 @@
 
 #ifdef HELTEC
     #define PLATFORM_STR "HELTEC"
+#endif
+#ifdef HELTECV3
+    #define PLATFORM_STR "HELTECV3"
 #else
     #define PLATFORM_STR "POE"
 #endif

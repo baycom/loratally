@@ -1,45 +1,89 @@
-#include "main.h"
-
-#include <LoRa.h>
 #include <CRC32.h>
+#include <RadioLib.h>
+
+#include "main.h"
 
 static unsigned long statusLast = 0;
 static unsigned long commandLast = 0;
 
-int RSSIlast = 0;
+static int RSSIlast = 0;
 static uint16_t msg_cnt = 0;
+static bool init_done = false;
+static volatile bool receivedFlag = false;
+static SPIClass newSPI(HSPI);
+static bool transmit_done=false;
+
+#ifdef HELTECV3
+SX1262 LoRa = new Module(LoRa_CS, LoRa_DIO1, LoRa_RST, LoRa_BUSY, newSPI);
+#else
+SX1276 LoRa = new Module(LoRa_CS, LoRa_DIO0, LoRa_RST, RADIOLIB_NC, newSPI);
+#endif
+// int16_t SX1262::begin(float freq = (434.0F), float bw = (125.0F), uint8_t sf
+// = (uint8_t)9U, uint8_t cr = (uint8_t)7U, uint8_t syncWord = (uint8_t)18U,
+// int8_t power = (int8_t)10, uint16_t preambleLength = (uint16_t)8U, float
+// tcxoVoltage = (1.6F), bool useRegulatorLDO = false)
+
+void display_status(char *str) {
+#ifdef HAS_DISPLAY
+    display.clear();
+    display.setTextAlignment(TEXT_ALIGN_CENTER);
+    display.setFont(ArialMT_Plain_16);
+    display.drawString(64, 12, "SX127X Error");
+    display.drawString(64, 42, str);
+    d();
+#endif
+}
+
+#if defined(ESP8266) || defined(ESP32)
+ICACHE_RAM_ATTR
+#endif
+void setFlag(void) { receivedFlag = true; }
 
 void lora_setup() {
 #ifdef HAS_LORA
-    SPI.begin(LoRa_SCK, LoRa_MISO, LoRa_MOSI, LoRa_CS);
-    LoRa.setPins(LoRa_CS, LoRa_RST, LoRa_DIO0);
-
-    if (!LoRa.begin(BAND)) {
-        err("SX1276 fail\n");
-#ifdef HAS_DISPLAY
-        display.clear();
-        display.setTextAlignment(TEXT_ALIGN_CENTER);
-        display.setFont(ArialMT_Plain_24);
-        display.drawString(64, 12, "SX127X");
-        display.drawString(64, 42, "FAIL");
-        d();
-#endif        
-        //        while (true) {
-        //            yield();
-        //        }
+    int ret = 0;
+    newSPI.begin(LoRa_SCK, LoRa_MISO, LoRa_MOSI, LoRa_CS);
+    if ((ret = LoRa.begin()) != RADIOLIB_ERR_NONE) {
+        err("SX12XX fail: %d\n", ret);
+        display_status("INIT FAIL");
+    } else {
+        if (LoRa.setFrequency(cfg.tx_frequency / 1E6) != RADIOLIB_ERR_NONE) {
+            err("SX12XX setting frequency: %.3f\n", cfg.tx_frequency / 1E6);
+            display_status("SET FREQ");
+        } else {
+            if (LoRa.setBandwidth(cfg.bandwidth / 1E3) != RADIOLIB_ERR_NONE) {
+                err("SX12XX setting bandwidth: %.3f\n", cfg.bandwidth / 1E3);
+                display_status("SET BW");
+            } else {
+                if (LoRa.setSpreadingFactor(cfg.sf) != RADIOLIB_ERR_NONE) {
+                    err("SX12XX setting spreading factor: %.3f\n",
+                        cfg.sf / 1E6);
+                    display_status("SET SF");
+                } else {
+                    if (LoRa.setSyncWord(cfg.syncword) != RADIOLIB_ERR_NONE) {
+                        err("SX12XX setting sync word\n");
+                        display_status("SET SYNC");
+                    } else {
+                        if (LoRa.setCRC(2) != RADIOLIB_ERR_NONE) {
+                            err("SX12XX setting crc\n");
+                            display_status("SET CRC");
+                        } else if (LoRa.setOutputPower(cfg.tx_power) !=
+                                   RADIOLIB_ERR_NONE) {
+                            err("SX12XX setting OutputPower\n");
+                            display_status("SET POWER");
+                        } else if (LoRa.startReceive() != RADIOLIB_ERR_NONE) {
+                            err("SX12XX startReceive\n");
+                            display_status("startReceive");
+                        } else {
+                            init_done = true;
+                            LoRa.setPacketReceivedAction(setFlag);
+                            setTallyLight(0, 0, 32, DISP_OFF);
+                        }
+                    }
+                }
+            }
+        }
     }
-
-    LoRa.setFrequency(cfg.tx_frequency);
-    LoRa.setSignalBandwidth(cfg.bandwidth);
-    LoRa.setSpreadingFactor(cfg.sf);
-    LoRa.setSyncWord(cfg.syncword);
-    LoRa.enableCrc();
-
-    setTallyLight(0, 0, 32, DISP_OFF);
-
-#ifdef DEBUG
-    LoRa.dumpRegisters(Serial);
-#endif
 #endif
 }
 
@@ -49,12 +93,20 @@ void lora_shutdown() {
 #endif
 }
 
-uint16_t LoRaGetMsgCnt(void) {
-    return msg_cnt;
-}
+uint16_t LoRaGetMsgCnt(void) { return msg_cnt; }
 
-int LoRaGetRSSI(void) {
-    return RSSIlast;
+int LoRaGetRSSI(void) { return RSSIlast; }
+
+void LoRaTx(tallyCMD_t &t) {
+    if (init_done) {
+        info("send status\n");
+        if (LoRa.transmit(t.b8, sizeof(t)) != RADIOLIB_ERR_NONE) {
+            err("SX12XX transmit\n");
+        }
+        LoRa.finishTransmit();
+        transmit_done = true;
+        LoRa.startReceive();
+    }
 }
 
 int LoRaSend(uint8_t addr, uint8_t r, uint8_t g, uint8_t b, bool disp) {
@@ -68,7 +120,7 @@ int LoRaSend(uint8_t addr, uint8_t r, uint8_t g, uint8_t b, bool disp) {
     t.t.g = g;
     t.t.b = b;
     t.dw.crc32 = CRC32::calculate(t.b8, sizeof(tallyCMD_t) - sizeof(uint32_t));
-#ifdef HAS_DISPLAY    
+#ifdef HAS_DISPLAY
     if (disp) {
         display.clear();
         display.setTextAlignment(TEXT_ALIGN_CENTER);
@@ -79,19 +131,16 @@ int LoRaSend(uint8_t addr, uint8_t r, uint8_t g, uint8_t b, bool disp) {
         display.drawString(64, 34, "Blue : " + String(t.t.b));
         d();
     }
-#endif    
+#endif
     dbg("crc32: %08x\n", t.dw.crc32);
     dbg("E1.31 -> Lora: ");
-    #ifdef DEBUG
+#ifdef DEBUG
     for (int i = 0; i < sizeof(t); i++) {
         printf("%02X ", t.b8[i]);
     }
-    #endif
+#endif
     dbg("\n");
-
-    LoRa.beginPacket();
-    LoRa.write(t.b8, sizeof(t));
-    LoRa.endPacket();
+    LoRaTx(t);
 #endif
     return 1;
 }
@@ -124,13 +173,10 @@ int LoRaBCTS(void) {
     t.bts.cmd = cmd_BC_TS;
 
     for (int i = 1; i <= LORA_MAX_TS; i++) {
-        t.bts.tally_state[i-1] = LoRaEncodeTallyState(i);
+        t.bts.tally_state[i - 1] = LoRaEncodeTallyState(i);
     }
     t.dw.crc32 = CRC32::calculate(t.b8, sizeof(tallyCMD_t) - sizeof(uint32_t));
-
-    LoRa.beginPacket();
-    LoRa.write(t.b8, sizeof(t));
-    LoRa.endPacket();
+    LoRaTx(t);
     commandLast = millis();
 #endif
     return 1;
@@ -182,9 +228,7 @@ int LoRaBCRGB(uint8_t *property_values, int numChannels, bool disp) {
     }
     dbg("\n");
 
-    LoRa.beginPacket();
-    LoRa.write(t.b8, sizeof(t));
-    LoRa.endPacket();
+    LoRaTx(t);
 #endif
     return 1;
 }
@@ -226,94 +270,117 @@ static void tallyFromEncoded(uint8_t *encodedrgb, uint8_t tally_id) {
 #endif
 }
 
-void lora_loop() {
-#ifdef HAS_LORA
-    int packetSize = LoRa.parsePacket();
-    if (packetSize) {
-        int rssi = LoRa.packetRssi();
-        dbg("incoming packet: %d RSSI %d\n", packetSize, rssi);
-        if (packetSize == sizeof(tallyCMD_t)) {
-            tallyCMD_t t;
-            LoRa.readBytes(t.b8, sizeof(t));
-#ifdef DEBUG
-            for (int i = 0; i < packetSize; i++) {
-                printf("%02X ", t.b8[i]);
-            }
-#endif            
-            dbg("\n");
-            uint32_t crc32 =
-                CRC32::calculate(t.b8, sizeof(tallyCMD_t) - sizeof(uint32_t));
-            dbg("crc32: %08x %08x\n", t.dw.crc32, crc32);
-#
-            if (t.dw.crc32 == crc32) {
-                if (t.t.version <= CMD_VERSION) {
-                    if (t.t.cmd == cmd_TALLY && t.t.addr == cfg.tally_id) {
-                        msg_cnt++;
-                        RSSIlast = rssi;
-                        setTallyLight(t.t.r, t.t.g, t.t.b, DISP_RSSI);
-                    } else if (t.b.cmd == cmd_BROADCAST) {
-                        msg_cnt++;
-                        RSSIlast = rssi;
-                        dbg("Tally Broadcast:\n");
-                        tallyFromEncoded(t.b.rgb, cfg.tally_id);
-                    } else if (t.t.cmd == cmd_BC_TS) {
-                        RSSIlast = rssi;
-                        msg_cnt++;
-                        for (int i = 0; i < LORA_MAX_TS; i++) {
-                            LoRaDecodeTallyState(i + 1, t.bts.tally_state[i]);
-                        }
-                    } else if (t.t.cmd == cmd_STATUS) {
-                        DynamicJsonDocument json(256);
-                        dbg("Tally Status:\n");
-                        dbg("Addr     : %d\n", t.s.addr);
-                        dbg("Voltage  : %d\n", t.s.voltage);
-                        dbg("MsgCount : %d\n", t.s.msgcnt);
-                        dbg("RSSI     : %d\n\n", t.s.rssi);
+void lora_receive() {
+    if (receivedFlag) {
+        receivedFlag = false;
+        tallyCMD_t t;
+        memset(t.b8, 0, sizeof(t));
 
-                        json["version"] = CMD_VERSION;
-                        json["uptime"] = millis()/1000;
-                        json["address"] = t.s.addr;
-                        json["voltage"] = t.s.voltage;
-                        json["msgCount"] = t.s.msgcnt;
-                        json["RSSI"] = t.s.rssi;
-                        char macStr[18] = {0};
-                        uint8_t *mac = t.s.mac;
-                        sprintf(macStr, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0],
-                                mac[1], mac[2], mac[3], mac[4], mac[5]);
-                        json["MAC"] = macStr;
-                        String output;
-                        serializeJson(json, output);
-                        String topic = "tally/status/" + String(cfg.tally_id);
-                        boolean ret =
-                            mqtt_publish(topic.c_str(), output.c_str());
-                        dbg("ret: %d json: %s\n", ret, output.c_str());
+        size_t packetSize = LoRa.getPacketLength();
+        dbg("lora_receive: %d %d\n", packetSize);
+        if (packetSize > 0) {
+            int16_t ret = LoRa.readData(t.b8, sizeof(t));
+            if(transmit_done) {
+                transmit_done = false;
+                return;
+            }
+            if (ret == RADIOLIB_ERR_NONE) {
+                int rssi = LoRa.getRSSI();
+                dbg("incoming packet: %d RSSI %d\n", packetSize, rssi);
+#ifdef DEBUG
+                for (int i = 0; i < sizeof(t); i++) {
+                    printf("%02X ", t.b8[i]);
+                }
+                dbg("\n");
+#endif
+                uint32_t crc32 = CRC32::calculate(
+                    t.b8, sizeof(tallyCMD_t) - sizeof(uint32_t));
+                dbg("crc32: %08x %08x\n", t.dw.crc32, crc32);
+                if (t.dw.crc32 == crc32) {
+                    if (t.t.version <= CMD_VERSION) {
+                        if (t.t.cmd == cmd_TALLY && t.t.addr == cfg.tally_id) {
+                            msg_cnt++;
+                            RSSIlast = rssi;
+                            setTallyLight(t.t.r, t.t.g, t.t.b, DISP_RSSI);
+                        } else if (t.b.cmd == cmd_BROADCAST) {
+                            msg_cnt++;
+                            RSSIlast = rssi;
+                            dbg("Tally Broadcast:\n");
+                            tallyFromEncoded(t.b.rgb, cfg.tally_id);
+                        } else if (t.t.cmd == cmd_BC_TS) {
+                            RSSIlast = rssi;
+                            msg_cnt++;
+                            for (int i = 0; i < LORA_MAX_TS; i++) {
+                                LoRaDecodeTallyState(i + 1,
+                                                     t.bts.tally_state[i]);
+                            }
+                        } else if (t.t.cmd == cmd_STATUS) {
+                            DynamicJsonDocument json(256);
+                            dbg("Tally Status:\n");
+                            dbg("Addr     : %d\n", t.s.addr);
+                            dbg("Voltage  : %d\n", t.s.voltage);
+                            dbg("MsgCount : %d\n", t.s.msgcnt);
+                            dbg("RSSI     : %d\n\n", t.s.rssi);
+
+                            json["version"] = CMD_VERSION;
+                            json["uptime"] = millis() / 1000;
+                            json["address"] = t.s.addr;
+                            json["voltage"] = t.s.voltage;
+                            json["msgCount"] = t.s.msgcnt;
+                            json["RSSI"] = t.s.rssi;
+                            char macStr[18] = {0};
+                            uint8_t *mac = t.s.mac;
+                            sprintf(macStr, "%02X:%02X:%02X:%02X:%02X:%02X",
+                                    mac[0], mac[1], mac[2], mac[3], mac[4],
+                                    mac[5]);
+                            json["MAC"] = macStr;
+                            String output;
+                            serializeJson(json, output);
+                            String topic =
+                                "tally/status/" + String(cfg.tally_id);
+                            boolean ret =
+                                mqtt_publish(topic.c_str(), output.c_str());
+                            dbg("ret: %d json: %s\n", ret, output.c_str());
+                        }
+                    } else {
+                        warn(
+                            "protocol version mismatch: %d "
+                            "%d\n",
+                            t.t.version, CMD_VERSION);
                     }
                 } else {
-                    warn("protocol version mismatch: %d %d\n", t.t.version,
-                           CMD_VERSION);
+                    warn("crc32 failed\n");
                 }
+
             } else {
-                warn("crc32 failed\n");
+                if (ret != RADIOLIB_ERR_RX_TIMEOUT) {
+                    err("SX12XX error receive: %d\n", ret);
+                }
             }
         }
     }
-    if (cfg.status_interval && (millis() - statusLast) > cfg.status_interval) {
-        dbg("Transmit status:\n");
-        tallyCMD_t s;
-        s.s.version = CMD_VERSION;
-        s.s.cmd = cmd_STATUS;
-        s.s.addr = cfg.tally_id;
-        s.s.voltage = get_batt_volt() / 100.0;
-        s.s.msgcnt = msg_cnt;
-        s.s.rssi = RSSIlast;
-        WiFi.macAddress(s.s.mac);
-        s.dw.crc32 =
-            CRC32::calculate(s.b8, sizeof(tallyCMD_t) - sizeof(uint32_t));
+}
 
-        LoRa.beginPacket();
-        LoRa.write(s.b8, sizeof(s));
-        LoRa.endPacket();
-        statusLast = millis();
+void LoRaStatus() {
+    dbg("Transmit status:\n");
+    tallyCMD_t s;
+    s.s.version = CMD_VERSION;
+    s.s.cmd = cmd_STATUS;
+    s.s.addr = cfg.tally_id;
+    s.s.voltage = get_batt_volt() / 100.0;
+    s.s.msgcnt = msg_cnt;
+    s.s.rssi = RSSIlast;
+    WiFi.macAddress(s.s.mac);
+    s.dw.crc32 = CRC32::calculate(s.b8, sizeof(tallyCMD_t) - sizeof(uint32_t));
+    LoRaTx(s);
+    statusLast = millis();
+}
+
+void lora_loop() {
+#ifdef HAS_LORA
+    lora_receive();
+    if (cfg.status_interval && (millis() - statusLast) > cfg.status_interval) {
+        LoRaStatus();
     }
     if (cfg.command_interval &&
         (millis() - commandLast) > cfg.command_interval) {
