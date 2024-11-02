@@ -82,6 +82,7 @@
 #define GPIO_BATTERY GPIO_NUM_35
 */
 #ifdef HELTEC
+    #define HAS_BATTERY
     #define HAS_DISPLAY
     #define HAS_DISPLAY_UPSIDEDOWN
     #define OLED_ADDRESS 0x3c
@@ -104,12 +105,15 @@
 
     #define ADCR1     100.0
     #define ADCR2     220.0
+    #define BATTCELLS 1
+
     #define Vext      21
 
     #define HAS_PIXEL
     #define PixelPin  23 // make sure to set this to the correct pin, ignored for Esp8266
 #endif
 #ifdef HELTECV3
+    #define HAS_BATTERY
     #define HAS_DISPLAY
     #define HAS_DISPLAY_UPSIDEDOWN
     #define OLED_ADDRESS 0x3c
@@ -118,7 +122,7 @@
     #define OLED_RST 21
 
     #define GPIO_BUTTON GPIO_NUM_0
-    #define GPIO_BATTERY GPIO_NUM_1
+    #define GPIO_BATTERY GPIO_NUM_2
 
     #define HAS_LORA
     #define LoRa_SCK  9
@@ -131,8 +135,11 @@
 
     #define Vext      36
     #define ADCctrl   37
-    #define ADCR1     100.0
-    #define ADCR2     390.0
+//    #define ADCR1     100.0
+//    #define ADCR2     390.0
+    #define ADCR1     240.0
+    #define ADCR2     634.0
+    #define BATTCELLS 2
 
     #define HAS_PIXEL
     #define PixelPin  4
@@ -148,6 +155,7 @@
 
     #define ADCR1     470.0
     #define ADCR2     470.0
+    #define BATTCELLS 1
 
     #define HAS_LORA
     #define LoRa_SCK  13
@@ -176,6 +184,7 @@
     #define Vext      12
     #define ADCR1     470.0
     #define ADCR2     470.0
+    #define BATTCELLS 1
 
     #define HAS_LORA
     #define LoRa_SCK  13

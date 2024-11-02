@@ -1,6 +1,8 @@
 #include "main.h"
 
+#ifdef HAS_DISPLAY
 SSD1306Wire display(OLED_ADDRESS, OLED_SDA, OLED_SCL);
+#endif
 static unsigned long displayTime = millis();
 static unsigned long displayCleared = millis();
 

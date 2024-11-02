@@ -1,7 +1,8 @@
 #include "main.h"
 
+#ifdef HAS_PIXEL
 NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip(256, PixelPin);
-
+#endif
 
 unsigned long tallyLast = 0;
 static bool tallyCleared = false;

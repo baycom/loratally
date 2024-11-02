@@ -16,6 +16,7 @@ const int lipocurve[21][2]={ {0, 3270+BAT_BIAS}, {5, 3610+BAT_BIAS}, {10, 3690+B
 Ewma *voltageFilter;
 
 uint8_t battVoltToPercent(float mvolts) {
+#ifdef HAS_BATTERY
     if(mvolts<3270)
         return 0;
     int i;
@@ -30,19 +31,20 @@ uint8_t battVoltToPercent(float mvolts) {
         return 0;
     }
     if(i<20) {
-        float vdiff = lipocurve[i+1][1] - lipocurve[i][1];
+        float vdiff = (lipocurve[i+1][1] - lipocurve[i][1])*BATTCELLS;
         float mdiff = mvolts - lipocurve[i][1];
         float perc = mdiff / vdiff;
-        float pdiff = lipocurve[i+1][0] - lipocurve[i][0];
-        float ret = pdiff * perc + lipocurve[i][0];
+        float pdiff = (lipocurve[i+1][0] - lipocurve[i][0])*BATTCELLS;
+        float ret = pdiff * perc + lipocurve[i][0]*BATTCELLS;
         dbg("pos: %d mvolts: %.3f vdiff: %.3f mdiff %.3f perc: %.3f pdiff: %.3f ret: %.3f\n", i, mvolts, vdiff, mdiff, perc, pdiff, ret);
         return ret;
     }
+#endif
     return 100;
 }
 
 static void batt_volt_loop(void) {
-    #if GPIO_BATTERY != -1
+    #ifdef HAS_BATTERY
     if((millis() - last_batt_volt) > 1000) {
         batt_volt=voltageFilter->filter(MEASURE_BIAS + analogReadMilliVolts(GPIO_BATTERY)*(ADCR1+ADCR2)/ADCR1);
         dbg("batt_volt: %.2f  batt_percent: %d\n", batt_volt, battVoltToPercent(batt_volt));
@@ -140,7 +142,9 @@ void WiFiEvent(WiFiEvent_t event) {
 }
 
 void setup() {
+#ifdef HAS_BATTERY
     randomSeed(analogRead(GPIO_BATTERY));
+#endif
     Serial.begin(115200);
     info("Version: %s-%s-%s, Version Number: %d, CFG Number: %d\n", VERSION_STR,
          PLATFORM_STR, BUILD_STR, VERSION_NUMBER, cfg_ver_num);
@@ -155,13 +159,14 @@ void setup() {
     digitalWrite(ADCctrl, LOW);
     delay(50);
 #endif
+#ifdef HAS_BATTERY
     int milliVolts=analogReadMilliVolts(GPIO_BATTERY);
     usleep(100*1000);
     milliVolts=analogReadMilliVolts(GPIO_BATTERY);
     usleep(100*1000);
     milliVolts=analogReadMilliVolts(GPIO_BATTERY);
     voltageFilter = new Ewma(0.1, milliVolts+600);
-
+#endif
     config_setup();
     read_config();
 

@@ -13,10 +13,12 @@ static volatile bool receivedFlag = false;
 static SPIClass newSPI(HSPI);
 static bool transmit_done=false;
 
-#ifdef HELTECV3
-SX1262 LoRa = new Module(LoRa_CS, LoRa_DIO1, LoRa_RST, LoRa_BUSY, newSPI);
-#else
-SX1276 LoRa = new Module(LoRa_CS, LoRa_DIO0, LoRa_RST, RADIOLIB_NC, newSPI);
+#ifdef HAS_LORA
+    #ifdef HELTECV3
+    SX1262 LoRa = new Module(LoRa_CS, LoRa_DIO1, LoRa_RST, LoRa_BUSY, newSPI);
+    #else
+    SX1276 LoRa = new Module(LoRa_CS, LoRa_DIO0, LoRa_RST, RADIOLIB_NC, newSPI);
+    #endif
 #endif
 // int16_t SX1262::begin(float freq = (434.0F), float bw = (125.0F), uint8_t sf
 // = (uint8_t)9U, uint8_t cr = (uint8_t)7U, uint8_t syncWord = (uint8_t)18U,
@@ -98,6 +100,7 @@ uint16_t LoRaGetMsgCnt(void) { return msg_cnt; }
 int LoRaGetRSSI(void) { return RSSIlast; }
 
 void LoRaTx(tallyCMD_t &t) {
+#ifdef HAS_LORA
     if (init_done) {
         info("send status\n");
         if (LoRa.transmit(t.b8, sizeof(t)) != RADIOLIB_ERR_NONE) {
@@ -107,6 +110,7 @@ void LoRaTx(tallyCMD_t &t) {
         transmit_done = true;
         LoRa.startReceive();
     }
+#endif
 }
 
 int LoRaSend(uint8_t addr, uint8_t r, uint8_t g, uint8_t b, bool disp) {
@@ -271,6 +275,7 @@ static void tallyFromEncoded(uint8_t *encodedrgb, uint8_t tally_id) {
 }
 
 void lora_receive() {
+#if HAS_LORA
     if (receivedFlag) {
         receivedFlag = false;
         tallyCMD_t t;
@@ -359,6 +364,7 @@ void lora_receive() {
             }
         }
     }
+#endif
 }
 
 void LoRaStatus() {
