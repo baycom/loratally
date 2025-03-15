@@ -145,6 +145,8 @@
     #define PixelPin  4
 #endif
 #ifdef OLIMEX_POE_ISO 
+    #define HAS_ETHERNET
+
     #define OLED_ADDRESS 0x3c
     #define OLED_SDA 36
     #define OLED_SCL 36 
@@ -173,6 +175,8 @@
     #define MODBUS_RX 33  
 #endif
 #ifdef OLIMEX_POE
+    #define HAS_ETHERNET
+
     #define OLED_ADDRESS 0x3c
     #define OLED_SDA 36
     #define OLED_SCL 36
@@ -202,6 +206,8 @@
     #define MODBUS_RX 33  
 #endif
 #ifdef LILYGO_POE
+    #define HAS_ETHERNET
+
     #define OLED_ADDRESS 0x3c
     #define OLED_SDA 32
     #define OLED_SCL 33

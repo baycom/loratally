@@ -275,7 +275,7 @@ static void tallyFromEncoded(uint8_t *encodedrgb, uint8_t tally_id) {
 }
 
 void lora_receive() {
-#if HAS_LORA
+#ifdef HAS_LORA
     if (receivedFlag) {
         receivedFlag = false;
         tallyCMD_t t;

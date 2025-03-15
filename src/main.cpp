@@ -94,17 +94,21 @@ void WiFiEvent(WiFiEvent_t event) {
     switch (event) {
         case ARDUINO_EVENT_ETH_START:
             dbg("ETH Started\n");
+        #ifdef HAS_ETHERNET
             // set eth hostname here
             ETH.setHostname(cfg.wifi_hostname);
+        #endif
             break;
         case ARDUINO_EVENT_ETH_CONNECTED:
             dbg("ETH Connected\n");
             break;
         case ARDUINO_EVENT_ETH_GOT_IP:
+        #ifdef HAS_ETHERNET
             info("ETH MAC: %s, IPv4: %s (%s, %dMbps)\n",
                  ETH.macAddress().c_str(), ETH.localIP().toString().c_str(),
                  ETH.fullDuplex() ? "FULL_DUPLEX" : "HALF_DUPLEX",
                  ETH.linkSpeed());
+        #endif
         case ARDUINO_EVENT_WIFI_STA_GOT_IP:
             if (!eth_connected) {
                 if (event == ARDUINO_EVENT_WIFI_STA_GOT_IP) {
@@ -218,8 +222,10 @@ void setup() {
             delay(200);
         }
     #endif
+#ifdef HAS_ETHERNET
     ETH.begin();
 //    ETH.begin(ETH_ADDR, ETH_POWER_PIN, ETH_MDC_PIN, ETH_MDIO_PIN, ETH_TYPE, ETH_CLK_MODE);
+#endif
     } else if (cfg.wifi_opmode == OPMODE_WIFI_STATION) {
         WiFi.disconnect();
         WiFi.setAutoReconnect(true);
